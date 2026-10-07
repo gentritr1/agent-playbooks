@@ -14,10 +14,17 @@ Per rule it prints one status:
 Heuristics also get their expiry: an EXPIRED heuristic is a hypothesis, not guidance.
 
 Versions come from node_modules/<pkg>/package.json when installed (the runtime truth), else the
-package.json range with ^/~ stripped; `gradle` from android/gradle/wrapper/gradle-wrapper.properties;
+package.json range with ^/~ stripped; a package absent from the root is looked up the same way in the `web/`
+sub-package (web/node_modules, then web/package.json), where a C++/wasm app keeps its browser tooling; `gradle` from android/gradle/wrapper/gradle-wrapper.properties;
 `node` from .nvmrc / .node-version / package.json engines; `claude-code` (the harness, for rules about tool and
 wait behaviour) from `claude --version` on PATH, else UNKNOWN (`--claude-version` overrides it, `none` forces
 UNKNOWN). Exit 0 unless the project path is bad.
+
+Contexts are detected conservatively, from the project root only (never a recursive search):
+  ctx:web   a web framework (next, vite, react-dom, astro) in the root package.json; or an index.html at the
+            root or in web/ or public/; or a web/package.json declaring a web framework or Playwright;
+  ctx:wasm  an Emscripten toolchain reference (emcc, em++, emcmake, emmake, emsdk, EMSCRIPTEN) in the root
+            Makefile or CMakeLists.txt. An Emscripten build may target Node only, so it is not ctx:web by itself.
 """
 from __future__ import annotations
 
@@ -41,6 +48,26 @@ def read_json(path: Path) -> dict:
         return {}
 
 
+WEB_FRAMEWORKS = ("next", "vite", "react-dom", "astro")
+WEB_SUBDIR = "web"
+HTML_ENTRY_DIRS = (".", "web", "public")
+EMSCRIPTEN = re.compile(r"(?<![\w.-])(?:emcc|em\+\+|emcmake|emmake|emsdk|EMSCRIPTEN)(?![\w-])")
+
+
+def deps_of(pkg: dict) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for section in ("dependencies", "devDependencies", "peerDependencies"):
+        out.update(pkg.get(section, {}) or {})
+    return out
+
+
+def read_text(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8", errors="replace") if path.is_file() else ""
+    except OSError:
+        return ""
+
+
 def detect_claude_version(override: str | None) -> tuple[str | None, str]:
     """(version, source) of the Claude Code CLI; None when it cannot be read."""
     if override is not None:
@@ -62,9 +89,8 @@ class Project:
         self._claude_override = claude_version
         self._claude: tuple[str | None, str] | None = None
         pkg = read_json(root / "package.json")
-        self.declared: dict[str, str] = {}
-        for section in ("dependencies", "devDependencies", "peerDependencies"):
-            self.declared.update(pkg.get(section, {}) or {})
+        self.declared = deps_of(pkg)
+        self.web_declared = deps_of(read_json(root / WEB_SUBDIR / "package.json"))
         self.engines = pkg.get("engines", {}) or {}
         self.app = read_json(root / "app.json").get("expo", {})
 
@@ -96,7 +122,22 @@ class Project:
             return installed, "node_modules"
         if name in self.declared:
             return clean(self.declared[name]), "package.json range"
+        installed = read_json(self.root / WEB_SUBDIR / "node_modules" / name / "package.json").get("version")
+        if installed:
+            return installed, f"{WEB_SUBDIR}/node_modules"
+        if name in self.web_declared:
+            return clean(self.web_declared[name]), f"{WEB_SUBDIR}/package.json range"
         return None, "not a dependency"
+
+    def is_web(self) -> bool:
+        if any(k in self.declared for k in WEB_FRAMEWORKS):
+            return True
+        if any((self.root / d / "index.html").is_file() for d in HTML_ENTRY_DIRS):
+            return True
+        return any(k in self.web_declared for k in (*WEB_FRAMEWORKS, "playwright", "@playwright/test"))
+
+    def is_wasm(self) -> bool:
+        return any(EMSCRIPTEN.search(read_text(self.root / f)) for f in ("Makefile", "CMakeLists.txt"))
 
     def has_context(self, ctx: str) -> bool:
         r, d = self.root, self.declared
@@ -109,7 +150,8 @@ class Project:
             "ios": lambda: (r / "ios").is_dir() or "ios" in self.app,
             "jest": lambda: "jest" in d or (r / "jest.config.js").exists(),
             "vercel": lambda: (r / "vercel.json").exists() or (r / ".vercel").is_dir() or "vercel" in d,
-            "web": lambda: any(k in d for k in ("next", "vite", "react-dom", "astro")),
+            "web": self.is_web,
+            "wasm": self.is_wasm,
             "neon": lambda: any(k.startswith("@neondatabase/") for k in d),
             "postgres": lambda: any(k in d for k in ("pg", "postgres", "prisma", "@prisma/client", "drizzle-orm"))
                                 or any(k.startswith("@neondatabase/") for k in d),

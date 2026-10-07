@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.28)
+project(fixture CXX)
+if(EMSCRIPTEN)
+  target_link_options(fixture PRIVATE -sALLOW_MEMORY_GROWTH=1)
+endif()

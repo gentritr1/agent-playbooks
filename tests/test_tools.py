@@ -293,5 +293,71 @@ class ApplicabilityTests(unittest.TestCase):
         self.assertEqual(res.returncode, 2)
 
 
+class ContextDetectionTests(unittest.TestCase):
+    """ctx:web and ctx:wasm detection. Positive fixtures must be detected; the negative controls (an RN app, a pure
+    Android app with a WebView asset page and an NDK CMakeLists, a Python lib with a Makefile and built HTML docs)
+    must not be, so a detector that searches too widely or treats any Makefile/CMakeLists as wasm fails here."""
+
+    def rows(self, project: str) -> dict[str, str]:
+        res = run(str(APPLY), str(FIX / project), "--playbooks", str(FIX / "ctx-playbooks"), "--today", TODAY,
+                  "--claude-version", "none")
+        self.assertEqual(res.returncode, 0, res.stderr)
+        return {line.split()[0]: line for line in res.stdout.splitlines() if line.startswith("CTX-")}
+
+    def assertDetected(self, project: str, ctx: str, rule_id: str) -> None:
+        row = self.rows(project)[rule_id]
+        self.assertIn(f"ctx:{ctx} detected", row, f"{project}: {row}")
+
+    def assertNotDetected(self, project: str, ctx: str, rule_id: str) -> None:
+        row = self.rows(project)[rule_id]
+        self.assertIn("UNKNOWN", row, f"{project}: {row}")
+        self.assertIn(f"ctx:{ctx} not detected", row, f"{project}: {row}")
+
+    # positive controls
+    def test_root_web_framework_is_still_web(self) -> None:
+        self.assertIn("APPLIES", self.rows("project-vite-app")["CTX-001"])
+
+    def test_emscripten_web_app_is_web(self) -> None:
+        row = self.rows("project-emscripten-web")["CTX-001"]
+        self.assertIn("APPLIES", row)
+        self.assertIn("ctx:web detected", row)
+
+    def test_emscripten_makefile_is_wasm(self) -> None:
+        row = self.rows("project-emscripten-web")["CTX-002"]
+        self.assertIn("APPLIES", row)
+        self.assertIn("ctx:wasm detected", row)
+
+    def test_root_index_html_is_web_not_wasm(self) -> None:
+        self.assertDetected("project-static-site", "web", "CTX-001")
+        self.assertNotDetected("project-static-site", "wasm", "CTX-002")
+
+    def test_cmake_emscripten_branch_is_wasm_not_web(self) -> None:
+        self.assertDetected("project-cmake-wasm", "wasm", "CTX-002")
+        self.assertNotDetected("project-cmake-wasm", "web", "CTX-001")
+
+    def test_web_subpackage_with_playwright_is_web(self) -> None:
+        self.assertDetected("project-web-playwright", "web", "CTX-001")
+        self.assertNotDetected("project-web-playwright", "wasm", "CTX-002")
+
+    def test_version_read_from_web_subpackage(self) -> None:
+        row = self.rows("project-emscripten-web")["CTX-003"]
+        self.assertIn("APPLIES", row)
+        self.assertIn("playwright@1.63 == 1.63.0", row)
+
+    # negative controls
+    def test_react_native_app_is_not_web_or_wasm(self) -> None:
+        self.assertNotDetected("project-rn-app", "web", "CTX-001")
+        self.assertNotDetected("project-rn-app", "wasm", "CTX-002")
+
+    def test_pure_android_app_is_not_web_or_wasm(self) -> None:
+        self.assertNotDetected("project-android", "web", "CTX-001")
+        self.assertNotDetected("project-android", "wasm", "CTX-002")
+
+    def test_python_lib_is_not_web_or_wasm(self) -> None:
+        self.assertNotDetected("project-python-lib", "web", "CTX-001")
+        self.assertNotDetected("project-python-lib", "wasm", "CTX-002")
+        self.assertIn("playwright@1.63: not found", self.rows("project-python-lib")["CTX-003"])
+
+
 if __name__ == "__main__":
     unittest.main()
