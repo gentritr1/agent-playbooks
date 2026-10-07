@@ -98,9 +98,9 @@ def clean(spec: str) -> str:
 
 
 def prefix_matches(want: str, have: str) -> bool:
-    want_parts = want.split(".")
+    """True when `have` starts with any `|`-separated version prefix in `want`."""
     have_parts = re.split(r"[.\-+]", have)
-    return have_parts[: len(want_parts)] == want_parts
+    return any(have_parts[: len(w.split("."))] == w.split(".") for w in want.split("|"))
 
 
 def evaluate(rule, project: Project, today: dt.date) -> tuple[str, list[str]]:
@@ -120,6 +120,8 @@ def evaluate(rule, project: Project, today: dt.date) -> tuple[str, list[str]]:
         if not project.has_context(ctx):
             status = "UNKNOWN" if status == "APPLIES" else status
             notes.append(f"ctx:{ctx} not detected")
+        else:
+            notes.append(f"ctx:{ctx} detected")
     if not rule.version_tokens() and not rule.context_tokens():
         notes.append("version-free")
     if status == "VERSION-DIFFERS":

@@ -16,8 +16,9 @@ FIELDS = ("Rule", "Kind", "Evidence", "Confidence", "Gate", "Valid while", "Sour
 KINDS = ("invariant", "fact", "heuristic")
 EXPIRES = re.compile(r"expires:\s*(\S+)")
 LAST_VALIDATED = re.compile(r"last_validated:\s*(\S+)")
-# `name@version` tokens inside backticks in a Valid-while line, e.g. `react-native@0.86`.
-VERSION_TOKEN = re.compile(r"`([@A-Za-z0-9_.\-/]+)@([0-9][0-9A-Za-z.\-]*)`")
+# `name@version` tokens inside backticks in a Valid-while line, e.g. `react-native@0.86`;
+# `|` separates versions the evidence covers, e.g. `expo@54|57`.
+VERSION_TOKEN = re.compile(r"`([@A-Za-z0-9_.\-/]+)@([0-9][0-9A-Za-z.\-|]*)`")
 # `ctx:<name>` tokens inside backticks, e.g. `ctx:vercel`.
 CONTEXT_TOKEN = re.compile(r"`ctx:([a-z0-9\-]+)`")
 LINK = re.compile(r"\]\(([^)\s]+)\)")

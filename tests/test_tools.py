@@ -188,8 +188,9 @@ class ApplicabilityTests(unittest.TestCase):
     def test_matching_project_applies(self) -> None:
         out = self.check("project-match")
         self.assertIn("APPLIES", self.row(out, "DEMO-002"))
-        self.assertIn("react-native@0.86 == 0.86.3", self.row(out, "DEMO-002"))
-        self.assertIn("APPLIES", self.row(out, "DEMO-001"))  # ctx:android detected
+        self.assertIn("react-native@0.85|0.86 == 0.86.3", self.row(out, "DEMO-002"))
+        self.assertIn("APPLIES", self.row(out, "DEMO-001"))
+        self.assertIn("ctx:android detected", self.row(out, "DEMO-001"))
 
     def test_installed_version_beats_declared_range(self) -> None:
         out = self.check("project-match")
@@ -198,7 +199,7 @@ class ApplicabilityTests(unittest.TestCase):
     def test_version_mismatch_is_flagged_with_both_versions(self) -> None:
         row = self.row(self.check("project-mismatch"), "DEMO-002")
         self.assertIn("VERSION-DIFFERS", row)
-        self.assertIn("rule 0.86 / project 0.87.0", row)
+        self.assertIn("rule 0.85|0.86 / project 0.87.0", row)
         self.assertIn("unverified here", row)
 
     def test_missing_context_is_unknown(self) -> None:

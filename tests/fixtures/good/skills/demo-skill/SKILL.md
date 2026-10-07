@@ -20,7 +20,7 @@ description: Use when testing the playbook lint; fixture only.
 - **Evidence:** fixture, 2026-10-07: 7.7 vs 3.5 min → [ev](evidence/demo.md)
 - **Confidence:** VERIFIED
 - **Gate:** `unzip -l app.apk | grep lib/` lists one ABI
-- **Valid while:** `react-native@0.86` · last_validated: 2026-10-01
+- **Valid while:** `react-native@0.85|0.86` · last_validated: 2026-10-01
 - **Source:** DEMO-002
 
 ### DEMO-003 · Skip a clean rebuild when native inputs are unchanged
