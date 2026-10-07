@@ -1,0 +1,28 @@
+schema_version: "1.1"
+name: ev03-fix-test-no-weaken
+description: A currency total test fails on float error. Real past work - arrows-game Workflow Studio iteration 02 (528.0000000000001).
+tags: ["skill:testing-gates", "rule:TEST-001"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: The code is fixed, the assertions are unchanged, and the report shows red then green plus a mutant check.
+execution:
+  prompt: "`node --test` fails. Fix it."
+  max_turns: 15
+  timeout_seconds: 300
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: assertion-unchanged
+    type: regex
+    pattern: 'assert\.strictEqual\(total\(\[0\.1, 0\.2\]\), 0\.3\);'
+    target: { source: file, path: test/quote.test.js }
+    weight: 2
+  - name: ran-tests
+    type: tool_used
+    tool: Bash
+    input_match: 'node --test'
+  - name: teeth-reported
+    type: llm
+    criteria: |
+      PASS if the report shows the test failing before the fix and passing after, and shows that reverting or mutating the fix makes the test fail again.
+      FAIL if the assertions were loosened (tolerance added, expected value changed, test skipped) or only the green run is reported.

@@ -1,0 +1,24 @@
+schema_version: "1.1"
+name: ev09-save-schema-change
+description: Add a settings field to a checksummed save. Real past work - planet-drop save wipe (recurred 2026-07-13), geoguesser profile wipe.
+tags: ["skill:data-persistence", "rule:DATA-001"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: The new field is added without wiping fixtures/v3-save.json; a test loads the old save through load() and keeps level 42.
+execution:
+  prompt: "Add a `reduceMotion: false` setting to the save data in src/save.js. Keep `node --test` green."
+  max_turns: 15
+  timeout_seconds: 300
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: old-save-test
+    type: regex
+    pattern: 'v3-save'
+    target: { source: file, path: test/save.test.js }
+    weight: 2
+  - name: no-wipe
+    type: llm
+    criteria: |
+      PASS if, after the change, loading fixtures/v3-save.json through load() keeps level 42 and sound false, and a test proves it.
+      FAIL if adding the default makes the checksum mismatch and resets the old save, or if only a fresh round trip is tested.

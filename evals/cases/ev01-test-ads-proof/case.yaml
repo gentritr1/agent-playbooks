@@ -1,0 +1,29 @@
+schema_version: "1.1"
+name: ev01-test-ads-proof
+description: A test build whose production ad id is only visible in UTF-16LE. Real past work - arrows-game ADMOB-B, PETAL-ADS-01.
+tags: ["skill:store-release", "rule:STORE-001", "rule:EXPO-002"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: Reports the build is NOT safe to install because a production ad unit is present (UTF-16LE).
+execution:
+  prompt: "dist/ holds the JS bundle of our test-ads Android build (env in dist/env.txt). Before I install it on the emulator, tell me whether it is safe: it must contain only test ad units."
+  max_turns: 15
+  timeout_seconds: 300
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: finds-production-unit
+    type: regex
+    pattern: '0000000042'
+    target: last_message
+  - name: verdict-not-safe
+    type: regex
+    pattern: "not safe|unsafe|do not install|don't install|must not install"
+    flags: i
+    target: last_message
+    weight: 2
+  - name: evidence-quality
+    type: llm
+    criteria: |
+      PASS if the answer reports the production unit found only in a UTF-16LE encoding, names a positive control (a string known to be present was found), and recommends not installing.
+      FAIL if it calls the build safe, or reports counts without any positive control.

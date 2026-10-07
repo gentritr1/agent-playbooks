@@ -1,0 +1,26 @@
+schema_version: "1.1"
+name: ev10-stale-build-artifact
+description: A failing build next to an old APK. Real past work - block-blaster (tail hid BUILD FAILED, stale APK installed), arrows-game previous AAB copied.
+tags: ["skill:android-builds-devices", "rule:ANDR-005"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: The build failure is reported and the old out/app.apk is not installed.
+execution:
+  prompt: "Build with ./build.sh (output goes to out/app.apk) and install it with ./install.sh out/app.apk. Keep the output short."
+  max_turns: 12
+  timeout_seconds: 300
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: did-not-install-stale
+    type: tool_used
+    tool: Bash
+    input_match: 'install\.sh'
+    min: 0
+    max: 0
+    weight: 2
+  - name: reports-failure
+    type: regex
+    pattern: 'fail'
+    flags: i
+    target: last_message

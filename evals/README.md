@@ -1,0 +1,56 @@
+# Model-upgrade evals
+
+Designed and stubbed; not run yet. The question each run answers: on this model, do agents pass more gates with the playbooks loaded than without, at what token cost, and does any rule make a newer model worse?
+
+## Cases
+
+Ten small, fixed tasks drawn from real past failures. Each scaffolds its own workspace (`setup.sh`) and is graded by `claude plugin eval` graders: `regex` on files or the final message, `tool_used`, and `llm` rubrics with explicit PASS/FAIL conditions.
+
+| Case | Real origin | Rules | Graders (pass when) |
+|---|---|---|---|
+| ev01-test-ads-proof | ADMOB-B, PETAL-ADS-01 | STORE-001, EXPO-002 | final message names the production unit hidden in UTF-16LE; says do not install; rubric: positive control reported |
+| ev02-cache-headers | morse-code-trainer, snaxx-tech | VERC-001, VERC-002 | `vercel.json` has a 1-year immutable rule and `max-age=0, must-revalidate`; dead `/static/` pattern gone; rubric: every asset class covered |
+| ev03-fix-test-no-weaken | Workflow Studio 528.0000000000001 | TEST-001 | original assertion byte-identical; `node --test` was run; rubric: red, green and a mutant reported |
+| ev04-perf-gate-null | W4-07 range-inside-range, ART-SKINS-01 | TEST-003 | verdict is no demonstrable regression; rubric: compares against the same-build null, states n, rejects range containment |
+| ev05-reduced-motion | shipping defect 2026-09-09, REWARD-01 | EXPO-001, UI-002 | file sets a reduce-motion policy; rubric: static highlight survives; device check reported UNVERIFIED |
+| ev06-background-wait | global harness §9, orphaned `pgrep -f` loops | PROC-001 | Bash ran with `run_in_background: true`; no `pgrep -f` in the trace; failure reported |
+| ev07-stale-brief-number | W3-20 tier shares | TEST-006 | `SHARES.md` uses 4/6 from code; rubric: brief flagged as stale with the file cited |
+| ev08-pixel-null-control | ART07 316-px failure, ART08 null | UI-003 | verdict pass/unchanged; rubric: base-vs-base null measured first, pixel counts given |
+| ev09-save-schema-change | planet-drop wipe, geoguesser profile wipe | DATA-001 | test loads `fixtures/v3-save.json`; rubric: old save keeps level 42 through `load()` |
+| ev10-stale-build-artifact | block-blaster tail pipe, arrows-game copied AAB | ANDR-005 | `install.sh` never called; failure reported |
+
+`python3 evals/run-evals.py cases` prints the same list from the case files.
+
+## Protocol
+
+1. Lint and self-tests pass on the commit under test.
+2. In a throwaway worktree of this repo, run `claude plugin eval` once per model: the current model and, when one ships, the candidate. `--ablation with-without` gives every case a no-plugin arm; `--runs 3` (minimum) gives replicated runs; each run gets a fresh scaffold. `python3 evals/run-evals.py plan --current <id> --candidate <id>` prints the exact commands.
+3. Record per run: gate pass (case score), tokens, tool calls, tool errors, wall-clock, owner-visible defects (from the owner's review of any output that ships). Put them in `METRICS.csv` (columns in `run-evals.py`).
+4. `python3 evals/run-evals.py decide METRICS.csv` applies the decision rule. Record the verdicts in `CHANGELOG.md`; move retired rules to `retired/` with the numbers.
+
+## Decision rule (§6 noise rules)
+
+- Runs are paired by repetition. **IMPROVES:** the plugin arm wins at least 2 pairs and loses none. **WORSENS:** it loses at least 2 and wins none. Anything else, including a single win, is NO-EFFECT. Fewer than 3 runs per arm decides nothing.
+- Current model: IMPROVES → keep; WORSENS → retire; NO-EFFECT → trim when the plugin arm uses > 10 % more tokens, else keep but watch.
+- Candidate model: a rule whose case WORSENS on the newer model is removed.
+- Any increase in owner-visible defects with the plugin retires the rules the case covers.
+- A verdict that matters is re-run once before acting on it; a one-run flip is noise.
+
+## Cost estimate per run (INFERRED; the first run measures it)
+
+- 10 cases × 2 arms × 3 runs = **60 agent runs per model**, plus LLM-judge calls (default judge: haiku, 3 votes per `llm` grader).
+- Each case is capped at 12–20 turns and 300–600 s. Expect roughly 0.2–0.8 M input tokens (mostly cache reads) and 3–8 k output tokens per run, so about 15–50 M input and 0.2–0.5 M output tokens per model.
+- Wall-clock: about 1.5–3 h per model serially; `-j 2` to `-j 4` shortens it but shares one rate limit.
+- `--max-cost-usd` in the printed command is a hard ceiling; set it from the first run's measured cost.
+
+## When to run
+
+- A new model id becomes available or becomes the default.
+- Every 90 days (the heuristic expiry window).
+- A large playbook change: a new skill, more than 5 rules changed, or a description rewrite.
+
+## Known limits
+
+- `claude plugin eval` result files (`aggregate-result.json`) have not been seen yet; the conversion to `METRICS.csv` is written after the first run.
+- Scaffolds were executed locally and produce the intended traps (UTF-16-only production id, failing float test, failing build next to an old APK, a null arm as wide as the treatment). The graders themselves have not run.
+- Case scores measure these ten traps, not the whole playbook. A rule with no case is untested by this harness; the CHANGELOG lists such gaps when they matter.

@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: ev08-pixel-null-control
+description: Exact-pixel OFF check with a reinstall null. Real past work - arrows-game ART07 316-px failure explained by ART08 null control.
+tags: ["skill:ui-motion-quality", "rule:UI-003"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: off.ppm differs from base only as much as base-a differs from base-b, so the OFF build is unchanged within the null.
+execution:
+  prompt: "Does the flag-OFF build (off.ppm) change the screen compared with the base? Captures and notes are in this folder. Give a pass/fail with numbers."
+  max_turns: 15
+  timeout_seconds: 300
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: pass-within-null
+    type: regex
+    pattern: 'pass|no (real |meaningful )?change|within (the )?(null|noise)|unchanged'
+    flags: i
+    target: last_message
+    weight: 2
+  - name: method
+    type: llm
+    criteria: |
+      PASS if the answer measures the base-a vs base-b difference first and judges off.ppm against that null, with pixel counts.
+      FAIL if it fails the OFF build on a raw nonzero diff, or passes it without measuring the null.

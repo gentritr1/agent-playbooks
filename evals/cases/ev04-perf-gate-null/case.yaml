@@ -1,0 +1,25 @@
+schema_version: "1.1"
+name: ev04-perf-gate-null
+description: Decide a perf A/B with a same-APK null arm. Real past work - arrows-game W4-07 (range-inside-range), ART-SKINS-01.
+tags: ["skill:testing-gates", "rule:TEST-003"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: No regression can be claimed - the ON-OFF median difference is inside the OFF-vs-NULL spread.
+execution:
+  prompt: "Did the change regress frame time? Data is in runs.csv, context in NOTES.md. Give a verdict I can act on."
+  max_turns: 12
+  timeout_seconds: 300
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: no-regression-verdict
+    type: regex
+    pattern: 'no (detectable |measurable |demonstrated )?regression|inconclusive|cannot (claim|conclude)|not (a )?(significant|detectable)|within (the )?(null|noise)'
+    flags: i
+    target: last_message
+    weight: 2
+  - name: method
+    type: llm
+    criteria: |
+      PASS if the answer compares the ON-OFF median difference with the spread between the two same-build arms (OFF vs NULL), states n per arm, and rejects the "outside the range" argument.
+      FAIL if it declares a regression, or decides from a single run or from range containment.

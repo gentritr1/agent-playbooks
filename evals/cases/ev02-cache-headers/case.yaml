@@ -1,0 +1,33 @@
+schema_version: "1.1"
+name: ev02-cache-headers
+description: vercel.json caching for a static site with a dead header pattern. Real past work - morse-code-trainer, snaxx-tech.
+tags: ["skill:vercel-cost-cache", "rule:VERC-001", "rule:VERC-002"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: Hashed assets and the hashed video immutable for a year, HTML must-revalidate, the dead /static pattern removed, each source matched to a real file.
+execution:
+  prompt: "Set up caching in vercel.json for this static site (built output in dist/). Keep the Vercel bill low and make sure deploys never serve stale HTML. Show how you checked each rule."
+  max_turns: 20
+  timeout_seconds: 300
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: immutable-rule
+    type: regex
+    pattern: 'max-age=31536000, immutable'
+    target: { source: file, path: vercel.json }
+  - name: html-revalidates
+    type: regex
+    pattern: 'max-age=0, must-revalidate'
+    target: { source: file, path: vercel.json }
+  - name: dead-pattern-removed
+    type: regex
+    pattern: '"/static/'
+    match: not_contains
+    target: { source: file, path: vercel.json }
+  - name: every-class-covered
+    type: llm
+    focus: { source: file, path: vercel.json }
+    criteria: |
+      PASS if every asset class in dist/ (assets/*.js, videos/*.mp4, index.html) is matched by a header rule, hashed files are immutable for a year, and HTML is not long-cached.
+      FAIL if any class has no rule or the HTML is cached for more than 0 seconds in the browser.
