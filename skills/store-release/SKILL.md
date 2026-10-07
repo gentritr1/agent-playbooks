@@ -1,6 +1,6 @@
 ---
 name: store-release
-description: Use before release AAB or test-ads builds, installing ads builds, Play screenshots or listing, privacy and data-safety text, or Play-only flows.
+description: Use before release AAB or test-ads builds, installing ads builds, Play screenshots, listing, privacy or data-safety text, or Play-only flows.
 ---
 
 # Store release and ads

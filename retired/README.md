@@ -62,3 +62,24 @@ Each entry: retired id, date, reason, the evidence that retired it, and what wou
 - **Reason:** meeting it darkened a light art colour to chocolate brown; legibility is carried by the outline.
 - **Evidence:** arrows-game `docs/engineering-lessons.md` ("A contract rule can be wrong").
 - **Replaced by:** UI-004.
+
+## Candidates rejected by the tool-reliability study (2026-10-07)
+Source for all three: `~/.claude/process-metrics/reports/tool-reliability-2026-10-07.md` ("Rejected candidates"); extract in `skills/tool-reliability/evidence/tool-study.md`. They never became rules; their ids are reserved so they are not added without new evidence.
+
+## TOOL-901 · Always use absolute paths in shell commands
+**Retired id:** TOOL-901
+- **Retired:** 2026-10-07
+- **Reason:** file-not-found rate is the same for absolute and relative paths within the same agent (OR 0.92 [0.50–1.69]); the raw gap in other failures is a different command mix.
+- **Reopen only if:** a within-agent comparison on a specific failure class shows a difference.
+
+## TOOL-902 · Wrap shell commands in `sh -c` to avoid zsh
+**Retired id:** TOOL-902
+- **Retired:** 2026-10-07
+- **Reason:** no within-agent difference (OR 0.65 [0.41–1.04]; zsh-class errors only 0.47 [0.15–1.50]). Quoting fixes the zsh failures (TOOL-002).
+- **Reopen only if:** a larger within-agent sample separates the arms.
+
+## TOOL-903 · Use the Grep and Glob tools instead of grep and find
+**Retired id:** TOOL-903
+- **Retired:** 2026-10-07
+- **Reason:** the tools were never called in 135k calls (not exposed in these sessions), so there is no evidence either way.
+- **Reopen only if:** the tools are available and a within-agent comparison exists.

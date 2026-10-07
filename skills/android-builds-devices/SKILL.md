@@ -1,6 +1,6 @@
 ---
 name: android-builds-devices
-description: Use before Gradle or prebuild runs, test APK builds or installs, adb emulator or device driving, capture harnesses, or work on a host shared with other sessions.
+description: Use before Gradle or prebuild runs, test APK builds or installs, adb on emulators or devices, capture harnesses, or work on a shared host.
 ---
 
 # Android builds and devices

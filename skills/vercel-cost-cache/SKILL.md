@@ -1,6 +1,6 @@
 ---
 name: vercel-cost-cache
-description: Use before Vercel deploys, vercel.json headers or rewrites, Cache-Control, static assets or service workers, static-vs-function choices, or Vercel bill work.
+description: Use before Vercel deploys, vercel.json headers or rewrites, Cache-Control, static assets or service workers, or Vercel cost work.
 ---
 
 # Vercel cost and caching

@@ -16,6 +16,7 @@ Status: v0.1, local only. No remote, not installed. See "Pending".
 | `testing-gates` | tests, detectors, benchmarks, A/B perf, quoted numbers | 7 |
 | `store-release` | release AABs, test-ads proof, Play surfaces, store text | 6 |
 | `agent-process` | delegation, waits, worktrees, merges, caches, speed changes | 7 |
+| `tool-reliability` | file edits through the shell, zsh quoting, chained commands, retries, host-load claims, parked subagents | 6 |
 
 Each skill has `SKILL.md` (the rules, inline) and `evidence/` (short extracts naming their source files). `retired/` lists rules that evidence disproved; their ids can never come back.
 
@@ -44,12 +45,12 @@ claude plugin validate .                        # manifest check (passes; one wa
 
 ## Token budget (measured 2026-10-07)
 
-Skill descriptions load into every session, so they are the most expensive bytes.
+Skill descriptions load into every session, so they are the most expensive bytes. Figures below are for v0.1.1 (9 skills).
 
 | Measure | Descriptions, all 8 | SKILL.md body, each |
 |---|---|---|
-| chars / 4 (the lint's estimate) | ~303 tokens | 1,077–1,435 |
-| `claude plugin details` projection | ~546 tokens always-on (includes names) | ~1.7k–2.3k on invoke |
+| chars / 4 (the lint's estimate) | ~324 tokens (9 skills) | 1,077–1,464 |
+| `claude plugin details` projection | ~594 tokens always-on (includes names) | ~1.7k–2.4k on invoke |
 
 The lint fails above 60 words per description, 600 tokens for all descriptions, or 1,500 tokens per body, all by chars/4. Claude Code's own projection reads about 1.5× higher for bodies; see CHANGELOG RULING R3.
 
@@ -65,7 +66,7 @@ This cannot be proven in advance. Whether a rule helps or hinders a future model
 
 ## Pending
 
-- The cross-project tool-reliability study (section in `agent-process`), when `~/.claude/process-metrics/reports/` exists.
+- The tool-reliability study's own "Proposed §11 rules" are drafts awaiting the owner; TOOL-004 and TOOL-006 stay INFERRED until he rules and the evals measure them.
 - The first eval run (designed and stubbed; never run).
 - A GitHub remote and the repository name: the owner confirms first.
 - Installing the plugin: not done. When approved, either `claude --plugin-dir <path>` per session, or `/plugin marketplace add <path>` then install `agent-playbooks`.

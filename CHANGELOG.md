@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.1 · 2026-10-07 (local, unpublished)
+
+Filled the pending tool-reliability section from `~/.claude/process-metrics/reports/tool-reliability-2026-10-07.md` and `.json` (135k calls, 34 projects, 2.9 % failed).
+
+- New skill `tool-reliability`: TOOL-001 file tools (heuristic, VERIFIED), TOOL-002 zsh quoting (fact, VERIFIED), TOOL-003 simple commands (heuristic, VERIFIED), TOOL-004 loop breaker (heuristic, INFERRED: threshold untested), TOOL-005 host load is a condition (fact, VERIFIED, association), TOOL-006 blocked subagents hand back (heuristic, INFERRED: effect untested).
+- PROC-001 now covers commands expected to run over ~2 min and cites the study (39.0 h + 22.4 h lost; odds 0.06 and 0.03).
+- `retired/`: TOOL-901 absolute paths, TOOL-902 `sh -c` wrapping, TOOL-903 Grep/Glob tools, which the study rejected.
+- Not turned into rules: the browser-tool items (association only), Read-before-Edit (the harness already enforces it), dispatch hygiene (3 cases, INFERRED, small), and the proposed wait-blocking hook (owner configuration, not a playbook rule).
+- Totals: 9 skills, 56 rules (51 VERIFIED, 5 INFERRED; 32 invariants, 14 facts, 10 heuristics); descriptions ~324 tokens by chars/4, ~594 always-on by `claude plugin details`.
+
+### Rulings
+- **R10 · New skill instead of growing `agent-process`.** Six more rules would push `agent-process` past the 1,500-token body budget (it is at 1,464). They share one trigger (shell and tool use), so they became `tool-reliability`; `agent-process` keeps a pointer where the Pending section was.
+- **R11 · Count discrepancy.** The study's hand-written summary says 135,022 calls and 3,974 failures; its regenerated data section says 135,035 and 3,976. The evidence extract quotes the data section and notes both.
+
 ## 0.1.0 · 2026-10-07 (local, unpublished)
 
 First version: 8 skills, 50 rules (47 VERIFIED, 3 INFERRED; 32 invariants, 12 facts, 6 heuristics), 24 evidence files, 8 retired ideas, lint and applicability tools with self-tests, and a designed but unrun eval harness (10 cases).
