@@ -1,6 +1,6 @@
 ---
 name: code-and-doc-lookup
-description: Use before searching code for callers or writers, looking up a library API or version range, or trusting an index, language server or docs service.
+description: Before searching code for callers or writers, library API or version-range lookups, or trusting an index, language server or docs service.
 ---
 
 # Code and doc lookup
@@ -10,7 +10,7 @@ Where answers come from. Measured on arrows-game 2026-10-07: the same 12 code qu
 ### LOOK-001 · Narrow retrieval: grep the pattern, read the range
 - **Rule:** Grep the call or write pattern (`name(`, `setX(KEY`), leave tests out unless the question is about tests, and read only the matching line range.
 - **Kind:** heuristic — goal: fewer context bytes for the same answers; override: stronger case evidence, stated in the report; expires: 2027-01-05
-- **Evidence:** 12 questions: refined grep 43.3k chars vs 81.1k baseline (median −34 %); ast-grep 45.8k, so the saving is the question, not the tool → [tool-trials](evidence/tool-trials.md)
+- **Evidence:** 12 questions: refined grep 43.3k chars vs 81.1k baseline (total −47 %, median per question +34 % saving); ast-grep 45.8k (total −44 %), so the saving is the question, not the tool → [tool-trials](evidence/tool-trials.md)
 - **Confidence:** INFERRED — the refined control was written with hindsight; untested on fresh tasks
 - **Gate:** searches name a call or write pattern; reads of large files carry a line range
 - **Valid while:** grep and Read in Claude Code · last_validated: 2026-10-07

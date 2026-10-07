@@ -5,7 +5,7 @@
 | Measure | Result |
 |---|---|
 | Accuracy on 12 real questions | 3 correct, 9 partial, 0 wrong; one partial was confidently misleading (`EXTRACTED`, pointed at an interface instead of the write site) |
-| Cost to a correct answer vs grep+read | median −7.5 % (the graph cost more); range −983 % to +95 % |
+| Cost to a correct answer vs grep+read | median per question −7.5 %, total +11.5 % (the graph cost more; 90,393 vs 81,066 chars); per-question range −983 % to +95 % |
 | Staleness without rebuild | 4 of 4 edits returned the old answer, exit 0, labelled `EXTRACTED`, no warning |
 | Built-in freshness check on query | none |
 | Rebuild | cold median 21 s, update median 23 s; "incremental" re-extracted 351 of 650 files |

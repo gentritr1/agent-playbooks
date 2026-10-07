@@ -1,6 +1,6 @@
 schema_version: "1.1"
 name: ev11-long-command-timeout
-description: A ~200 s analysis script that succeeds. Real past work - 218 of 257 foreground cap hits ran at a self-raised timeout on a 120 s default; 245 of 257 timed-out commands kept running and were rerun anyway (global harness section 11).
+description: A ~200 s analysis script that succeeds. Real past work - 218 of 257 foreground-wait cap hits ran to the 10-min cap at a self-raised timeout on a 120 s default; 202 of 261 long-command timeouts were moved to the background and kept running (global harness section 11).
 tags: ["skill:agent-process", "rule:PROC-001", "skill:tool-reliability", "rule:TOOL-009"]
 plugins: ["../../.."]
 runs: 3
@@ -12,6 +12,17 @@ execution:
 context:
   scaffold_script: setup.sh
 graders:
+  # Outcome: no foreground call was observed running past 120 s. A foreground Bash call can exceed 120 s in only
+  # two ways: it hits the 2-min default (the harness then reports it timed out or moved it to the background:
+  # an observed outcome in the trace), or the agent raised its timeout above 120000 (seen in the call input).
+  # There is no duration grader in `claude plugin eval` (no custom-code graders), so these two together are the check.
+  - name: no-foreground-call-hit-the-default-cap
+    type: regex
+    pattern: 'moved to the background|Command timed out after|did not complete within'
+    flags: i
+    match: not_contains
+    target: trace
+    weight: 2
   - name: no-foreground-timeout-above-default
     type: tool_used
     tool: Bash

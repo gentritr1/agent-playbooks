@@ -11,7 +11,7 @@ description: Use when testing the playbook lint; fixture only.
 - **Evidence:** fixture project, 2026-09-26: two agents drove one device → [ev](evidence/demo.md)
 - **Confidence:** VERIFIED
 - **Gate:** `grep -L -- '-s ' scripts/*.sh` prints nothing
-- **Valid while:** `ctx:android` · last_validated: 2026-10-01
+- **Valid while:** `ctx:android` `claude-code@2.1` · last_validated: 2026-10-01
 - **Source:** DEMO-001
 
 ### DEMO-002 · Build only the ABI the devices run

@@ -1,19 +1,19 @@
 ---
 name: agent-process
-description: Use before delegating, long waits or long commands, worktrees, merges, commits or deletions, or changing how work is run to go faster.
+description: Before delegating, long waits or commands, worktrees, merges, commits or deletions, or speed changes.
 ---
 
 # Agent process
 
 How the work is run, measured across ~93 helper runs and several projects. The owner's global harness sets the policy; these rules carry its measured scars.
 
-### PROC-001 · Never block past the 2-min default
-- **Rule:** No call blocks longer than the 2-min default: longer work runs in the background or via Monitor, and every wait ends on failure and a deadline, not only success.
+### PROC-001 · No foreground call outlives the harness default
+- **Rule:** No foreground call outlives the harness default; longer work runs detached (background or Monitor), and every wait ends on failure and a deadline, not only success.
 - **Kind:** invariant — why: blocked turns and orphaned loops cost hours and load the host for days.
 - **Evidence:** 34 projects (§11): 218 of 257 cap hits ran ≥ 590 s at a self-raised `timeout`; waits 39.0 h, long commands 22.4 h; a background loop ran 13 h; arrows-game `pgrep -f` loops ~42 h → [waits](evidence/waits.md)
 - **Confidence:** VERIFIED
 - **Gate:** no foreground `timeout` above 120000 unless the call description justifies it (a defect otherwise); no foreground poll over 30 s; every wait also matches failure (`kill -0 $PID`, FAILED)
-- **Valid while:** Claude Code Bash tool, 2-min default, 10-min cap · last_validated: 2026-10-07
+- **Valid while:** Claude Code Bash tool with a 2-min default and a 10-min cap · `claude-code@2.1` · last_validated: 2026-10-07
 - **Source:** PROC-001
 
 ### PROC-002 · Speed decisions come from the ledger
@@ -62,7 +62,7 @@ How the work is run, measured across ~93 helper runs and several projects. The o
 - **Source:** PROC-007
 
 ## Experiment, not a rule: `fg-wait-guard`
-[`tools/hooks/fg-wait-guard.sh`](../../tools/hooks/README.md) denies only foreground `until`/`while … sleep` Bash calls with `timeout` ≥ 300000. Approved 2026-10-07; it starts when the owner registers it (agents may not edit settings). Judged after 30 days against the prior 30: foreground calls ≥ 300 s per 1,000 down ≥ 50 %, foreground call-hours ≥ 120 s, a flat workaround detector, zsh `=` failures as the null; removed if workarounds rise. Kill switch `CLAUDE_HOOK_FG_WAIT_OFF=1`.
+[`tools/hooks/fg-wait-guard.sh`](../../tools/hooks/README.md) denies only foreground `until`/`while … sleep` Bash calls with `timeout` ≥ 300000. Owner-registered 2026-10-07 11:45. Baseline frozen in `~/.claude/process-metrics/reports/fg-wait-baseline-2026-10-07.*`; judged 2026-11-06 by `harness-audit --judge-fg-wait` (rule FG-WAIT-R1: foreground calls ≥ 300 s per 1,000 down ≥ 50 % in both strata, workaround detector and zsh `=` null flat; workarounds rising = remove). Kill switch `CLAUDE_HOOK_FG_WAIT_OFF=1`.
 
 ## Not covered / defer to
 Parallel dispatch: `superpowers:dispatching-parallel-agents`, `superpowers:subagent-driven-development`. Worktree mechanics: `superpowers:using-git-worktrees`. Caches and indexes (PROC-003): `code-and-doc-lookup`. Hand-back, retries, timeouts: `tool-reliability`.

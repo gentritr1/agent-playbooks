@@ -3,13 +3,13 @@
 **Source:** arrows-game `docs/process/agent-memory-tools-2026-10-07.md` (route experiment; throwaway worktree pinned to `ace959b`; sandboxed, no network except Serena's first-run language-server download; host load 21–70). Same 12 questions and ground truth as the Graphify trial ([graphify](graphify.md)), so the rows compare directly. Chars are what an agent reads to reach the full truth; tokens ≈ chars / 4.
 
 ## Code questions (12; ground truth read from the code at `ace959b`)
-| Route | Correct / partial / wrong / n/a | Chars, 12 Q | Median saving vs baseline |
+| Route | Correct / partial / wrong / n/a | Chars, 12 Q (total change) | Median per-question saving vs baseline |
 |---|---|---|---|
 | Baseline grep + whole reads | (reference) | 81,066 | 0 |
-| **Refined grep** (call or write pattern, tests excluded, line ranges) | (reference answers) | 43,254 | +34.1 % (−4 to +92) |
-| ast-grep 0.45.3, realistic | 8 / 2 / 0 / 2 | 45,786 | +39.2 % (−16 to +92) |
+| **Refined grep** (call or write pattern, tests excluded, line ranges) | (reference answers) | 43,254 (total −46.6 %) | +34.1 % (−4 to +92) |
+| ast-grep 0.45.3, realistic | 8 / 2 / 0 / 2 | 45,786 (total −43.5 %) | +39.2 % (−16 to +92) |
 | Serena 1.7.0 (LSP over MCP), realistic | 6 / 4 (2 misleading) / 0 / 2 | 76,502 + 32,472 per session | 0.0 % (−80 to +70) |
-| Graphify | 3 / 9 / 0 / 0 | 90,393 | −7.5 % |
+| Graphify | 3 / 9 / 0 / 0 | 90,393 (total +11.5 %) | −7.5 % |
 
 - **The saving is the question, not the tool:** ast-grep and refined grep save about the same, and both used hindsight (they named `PETALS`, `HALLOWEEN_BOARD`, `internal fun`). Hence LOOK-001 is INFERRED until the eval harness measures it on fresh tasks.
 - **ast-grep traps:** `-l ts` silently skips `.tsx` (Q7: `ads.tsx`); an identifier pattern skips property keys (Q3: 0 test files); 3 of ~25 patterns matched nothing, which looks like "no results".

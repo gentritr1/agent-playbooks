@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.2.1 · 2026-10-07
+
+Fixes from an adversarial final review. Authority for tool and wait rules: `~/.claude/CLAUDE.md` §9–§11 as revised 2026-10-07.
+
+- **Numbers.** 135,035 paired calls; 3,976 failures (2.9 %) everywhere. Cap hits: 218 of 257 foreground-wait cap hits ran to the 10-min cap; 202 of 261 long-command timeouts were moved to the background and kept running (two unsupported fractions removed). Reruns: of 269 non-wait timeouts, 8 were later followed by a passing identical rerun; the number of reruns itself is not measured. E3 pair 2 is +528 s; the incremental-build saving is measured −510 s × 31 = 4.4 h against the audit's 3.0 h pre-experiment estimate. Graphify: median per question −7.5 %, total +11.5 %; ast-grep and refined grep now say "total" or "median per question". §9: no detectable improvement in pooled data (association); arrows-game 0.94 % → 0.48 %, geoguesser flat, 2-day window (re-computed from harness-audit 1.5 digests). ev11's description no longer claims the capped commands were rerun.
+- **TOOL-007** marks the "splitting does not lower total failures" part [inferred]; the measured part is 3.8 % vs 2.0 % per call, OR 2.07. **TOOL-009** carries the corrected numbers. **TOOL-008** is re-measured by a harness-audit run on 2026-11-06, not from hook data (the hook logs no outcomes). The browser-pane "a repeat fails identically" note states n = 3 loops.
+- **PROC-001** invariant: "no foreground call outlives the harness default; longer work runs detached"; the 2-min default and 10-min cap moved to Valid while.
+- **`claude-code@<version>`** token: `check-applicability.py` reads `claude --version` (UNKNOWN when unavailable; `--claude-version` overrides). PROC-001, TOOL-007 and TOOL-009 carry `claude-code@2.1`. Tests: matching, other version, unknown, and detection from a fake CLI on PATH.
+- **Hook script** (predicate unchanged; a decision-table test pins it, and a mutated threshold fails it): `cwd` logs `~` for the home dir, `ts` is ISO with offset, the log rotates to `fg-wait.<date>.jsonl` above 5 MB (schema `fg-wait-guard/2`). `tools/hooks/README.md` lists the known gaps (`for` loops, `cd &&` prefixes, 120–300 s waits) and how the experiment is judged.
+- **Experiment instruments** (in `~/.claude/process-metrics/`, not this repo): frozen baseline `reports/fg-wait-baseline-2026-10-07.{json,md}` (2026-09-07..2026-10-07 11:45, no ledger writes), a workaround detector in harness-audit 1.5, `harness-audit --judge-fg-wait` with pre-registered rule FG-WAIT-R1, and self-tests on fixtures and synthetic data.
+- **Lint** estimates the rendered listing (`- <plugin>:<name>: <desc>`) at 2.8 chars/token (calibration 658 projected / 1,819 chars on 2026-10-07) and, when `claude` is on PATH, fails on `claude plugin details`' always-on number; chars/4 is still printed. Descriptions trimmed (prefix "Use before" → "Before", shorter phrasing, no trigger word dropped): 1,819 → 1,622 chars, ~658 → ~614 projected.
+- **Evals.** ev06 and ev11 grade outcomes: no foreground call past 120 s (no 2-min cap marker in the trace and no foreground `timeout` above 120000) and the script ran exactly once, instead of "used run_in_background". `decide` needs a with-vs-with null arm (`with2`): an effect inside |with − with2| is NO-EFFECT; no null arm is INSUFFICIENT. `plan` prints the null run.
+- **README** documents how the skill listing is budgeted (read from the CLI) and why most of these skills showed no description in a crowded session.
+- Totals: 10 skills, 59 rules (55 VERIFIED, 4 INFERRED; 34 invariants, 16 facts, 9 heuristics); listing 1,622 chars, ~580 projected by the lint, ~614 by `claude plugin details`.
+
+### Rulings
+- **R19 · Review numbers are applied as given and re-checked where possible.** The §9 per-project rates were re-computed from transcripts (arrows-game 129 of 13,717 → 13 of 2,706; geoguesser 42 of 14,158 → 16 of 4,102) and match. CHANGELOG history (R11, R16) was edited to drop the removed figures rather than keep them in a note.
+- **R20 · Listing budget 700 projected, not 600.** After every trim that keeps the trigger words, `claude plugin details` still projects ~611–614. The review's candidate cuts "shared host", "database cost estimates" and "Play-only flows" each name a rule (ANDR-001/004, DATA-005, STORE-004), so they stayed; "Use before" became "Before" instead. The 2.8 chars/token estimate runs ~6 % low on the trimmed text (614 / 1,622 = 2.64), so the CLI number decides when available.
+- **R21 · `claude-code@2.1`, not `@2.1.269`.** The token matches by prefix; pinning the patch level would mark every rule VERSION-DIFFERS after each daily CLI update. Only the three harness-behaviour rules carry it.
+- **R22 · FG-WAIT-R1 adds a noise check.** "Down ≥ 50 % in both strata" must also put the post count below the 5th percentile of Poisson(baseline rate × post Bash calls); workaround and null flatness are Poisson 95 % bounds per stratum; fewer than 1,000 post Bash calls in a stratum is INSUFFICIENT. A rising workaround detector means REMOVE-HOOK; a moving null means INCONCLUSIVE.
+- **R23 · Workaround detector scope.** Counted (foreground): inline python sleeps, inline node/bun/deno timers, `read -t`, `timeout N tail -f`, `*wait*` scripts and `wait-on`/`wait-for-it`; plus background wait loops whose task ended `failed` or `killed`, the proxy for "ended by timeout" because digests hold no exit code. Heredoc bodies are data. `for` loops and `cd &&`-prefixed loops are reported as gap counts, never judged. The baseline was rebuilt once with `--force` before any judgement (parser 1.4 counted edit scripts that mention `sleep(`); the reason is stored in the file.
+- **R24 · Ledger migration.** The 89 schema-less arrows-game lines got appended `migrates` lines (no edits) with every field mapped that v1 has; class is inferred from the purpose like the transcript-derived v2 lines; parent ids come from the digests; loadavg, disk, emulator, outcome and route are null. The 4 `arrows-process-metrics/1` lines were left as they are. `ledger-check` does not count the fallback class `other` toward T2.
+- **R25 · Outcome graders within the runner's limits.** `claude plugin eval` has no duration or custom-code grader, so "no foreground call past 120 s" is checked as its two possible causes: the 2-min cap marker in the trace (an observed outcome) and a foreground `timeout` above 120000. The null arm is a second `claude plugin eval` run with `--ablation none`.
+- **R26 · Hook log schema 2.** The `ts` and `cwd` formats changed, so new lines say `fg-wait-guard/2`; earlier lines were not rewritten.
+
 ## 0.2.0 · 2026-10-07
 
 Folds in the day's measured results and syncs the tool rules with the owner's new `~/.claude/CLAUDE.md` §11 "Tool use, measured" (adversarially reviewed), which is now the authority for tool and wait rules. Sources: arrows-game `docs/process/speed-experiments-2026-10-07.md`, `agent-memory-tools-2026-10-07.md`, `graphify-trial-2026-10-07.md`, commit `ca0b0f5` (owner approves E3 and E1), and `~/.claude/process-metrics/reports/tool-reliability-2026-10-07.md`.
@@ -19,7 +44,7 @@ Folds in the day's measured results and syncs the tool rules with the owner's ne
 - **R13 · Retire, not rewrite, when the advice reverses.** TOOL-003 and TOOL-004 changed meaning under §11, so their ids were retired and the replacements got new ids (TOOL-007, TOOL-008); an old report citing TOOL-003 still means what it said. TOOL-005 and TOOL-006 kept their ids because their meaning only tightened.
 - **R14 · E1 lives in ANDR-002.** One rule with a split confidence line ("VERIFIED — bytes; the time saving is INFERRED") rather than a second ABI rule. The lint counts it as VERIFIED.
 - **R15 · Invariants by owner policy count as VERIFIED** when the harm they prevent is measured (TOOL-006: 134 parked agents), as PROC-007 already does; the hand-back's effect itself is untested and the Confidence line says so.
-- **R16 · §11's numbers are quoted as §11's.** Several (245/257, 206/257, ≥ 3× the work) are not in the study text; the evidence extract names §11 as their source. The `find` exit-0 claim was re-run: silent only inside a pipeline.
+- **R16 · §11's numbers are quoted as §11's.** Two cap-hit fractions that were not in the study text were dropped in 0.2.1 (R19); 218 of 257 is §11's and the evidence extract says so. The `find` exit-0 claim was re-run: silent only inside a pipeline.
 - **R17 · PROC-001 keeps both §11 wait invariants in one rule** (no block past 2 min; every wait ends on failure and a deadline) to stay inside the body budget.
 - **R18 · Always-on projection above 600.** Claude Code projects ~658 tokens (chars/4: ~368, under the lint's 600). Left as is: the lint budget is chars/4 by R3; trimming every description again is the owner's call.
 
@@ -35,7 +60,7 @@ Filled the pending tool-reliability section from `~/.claude/process-metrics/repo
 
 ### Rulings
 - **R10 · New skill instead of growing `agent-process`.** Six more rules would push `agent-process` past the 1,500-token body budget (it is at 1,464). They share one trigger (shell and tool use), so they became `tool-reliability`; `agent-process` keeps a pointer where the Pending section was.
-- **R11 · Count discrepancy.** The study's hand-written summary says 135,022 calls and 3,974 failures; its regenerated data section says 135,035 and 3,976. The evidence extract quotes the data section and notes both.
+- **R11 · Counts.** The study covers 135,035 paired calls; 3,976 failures (2.9 %), from its regenerated data section; the evidence extract quotes those.
 
 ## 0.1.0 · 2026-10-07 (local, unpublished)
 

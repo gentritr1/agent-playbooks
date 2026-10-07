@@ -2,7 +2,7 @@
 
 Skills with data: shared, versioned practices that any Claude agent on any project can load before app or website work. Every rule carries measured evidence, a gate that proves it was followed, the conditions it was measured under, and a date after which it is no longer served as fact.
 
-Status: v0.2.0, a private GitHub repository installed as a Claude Code plugin. See "Pending".
+Status: v0.2.1, a private GitHub repository installed as a Claude Code plugin. See "Pending".
 
 ## What is inside
 
@@ -42,18 +42,29 @@ python3 tools/check-applicability.py <project>  # APPLIES / VERSION-DIFFERS / UN
 python3 -m unittest discover -s tests           # self-tests, with negative controls for every failing check
 python3 evals/run-evals.py plan --current <model> [--candidate <model>]   # prints eval commands; runs nothing
 claude plugin validate .                        # manifest check (passes; one warning: no author yet)
+python3 tools/lint-playbooks.py --no-claude     # same lint without calling `claude plugin details`
 ```
 
-## Token budget (measured 2026-10-07)
+## Token budget (measured 2026-10-07, v0.2.1)
 
-Skill descriptions load into every session, so they are the most expensive bytes. Figures below are for v0.2.0 (10 skills).
+Skill descriptions load into every session, so they are the most expensive bytes.
 
-| Measure | Descriptions, all skills | SKILL.md body, each |
+| Measure | Skill listing (10 skills) | SKILL.md body, each |
 |---|---|---|
-| chars / 4 (the lint's estimate) | ~368 tokens (10 skills) | 947–1,489 |
-| `claude --plugin-dir . plugin details agent-playbooks` projection | ~658 tokens always-on (includes names; v0.1.1: ~594) | ~1.5k–2.4k on invoke |
+| rendered listing lines `- agent-playbooks:<name>: <desc>`, chars / 2.8 (the lint) | 1,622 chars, ~580 projected (v0.2.0: 1,819 chars) | — |
+| `claude --plugin-dir . plugin details agent-playbooks` | ~614 always-on (v0.2.0: ~658) | ~1.6k–2.4k on invoke |
+| chars / 4 of the descriptions alone (old estimate, printed for comparison) | ~318 (v0.2.0: ~368) | 958–1,499 |
 
-The lint fails above 60 words per description, 600 tokens for all descriptions, or 1,500 tokens per body, all by chars/4. Claude Code's own projection reads about 1.5× higher for bodies; see CHANGELOG RULING R3.
+The lint fails above 60 words per description, 700 projected tokens for the listing (estimate or `claude plugin details`, R20), or 1,500 tokens (chars/4) per body.
+
+## Skill listing: why descriptions can vanish (2026-10-07)
+
+Observed (controller session and this one, 2026-10-07): with well over 100 skills installed, most `agent-playbooks` skills were listed by name only; only `android-builds-devices` showed its description. Read from the installed CLI 2.1.269 (`@anthropic-ai/claude-code/bin/claude.exe`; the setting texts are its own schema descriptions):
+- The listing has a character budget: `skillListingBudgetFraction` ("Fraction of the context window (in characters) reserved for the skill listing", default 0.01) × the model's context window × 4 chars per token, i.e. ~8,000 chars at 200k and ~40,000 at 1M. `SLASH_COMMAND_TOOL_CHAR_BUDGET` overrides it. Each entry's description (plus ` - <when_to_use>`) is capped at `skillListingMaxDescChars` (default 1,536; the docs state the 1,536 cap).
+- Over budget, descriptions are dropped, not skills: every skill keeps its `- <plugin>:<name>` line. Descriptions are re-admitted greedily in order of a usage score (invocations, halving every 7 days, floor 10 %); never-used skills score 0 and keep listing order. A description that does not fit the remaining budget is skipped, so long descriptions lose first among equals.
+- So skill count (total size), usage history and description length decide what is shown; plugin order only breaks ties among unused skills. A new plugin's unused skills are the first to go name-only, which is what was observed; `android-builds-devices` had been invoked before.
+- A name-only skill can still be invoked by name, but an agent can only discover it from its name. Names here are descriptive, but trigger words in descriptions do nothing in a crowded session.
+- Levers (owner's settings, not changed here): raise `skillListingBudgetFraction`, disable unused plugins, mark rarely needed skills `name-only` via `skillOverrides`, or run 1M-context models. `/context` shows the listing the model actually receives.
 
 ## How this avoids dumbing down future models
 
@@ -68,7 +79,8 @@ This cannot be proven in advance. Whether a rule helps or hinders a future model
 ## Pending
 
 - The first eval run (designed and stubbed; never run). 12 cases; ev11 and ev12 were added in v0.2.0.
-- The `fg-wait-guard` hook ([tools/hooks](tools/hooks/README.md)) is an approved experiment that starts when the owner registers it; it is not a rule.
-- TOOL-008 is re-measured after 30 days of hook data (its expiry, 2026-11-06, forces the look).
+- The `fg-wait-guard` hook ([tools/hooks](tools/hooks/README.md)) is an approved experiment, registered by the owner 2026-10-07 11:45; it is not a rule.
+- TOOL-008 is re-measured with a harness-audit run on 2026-11-06 (its expiry forces the look), from transcripts: the hook logs decisions, not outcomes.
+- The `fg-wait-guard` judgement: `harness-audit --judge-fg-wait` on 2026-11-06 against the frozen baseline.
 - ANDR-002's time saving is unproven on a loaded host; the bytes carry the rule.
-- Claude Code projects ~658 always-on tokens, above the 600 the lint enforces by chars/4 (~368); see CHANGELOG R3.
+- Claude Code projects ~614 always-on tokens; the budget is 700 projected (R20). In crowded sessions descriptions may still be hidden (see "Skill listing").

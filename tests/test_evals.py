@@ -40,12 +40,24 @@ class DecideTests(unittest.TestCase):
     def test_fewer_than_three_reps_decides_nothing(self) -> None:
         self.assertIn("INSUFFICIENT", self.rows["short"])
 
+    def test_improvement_inside_the_with_vs_with_spread_is_no_effect(self) -> None:
+        self.assertIn("KEEP-WATCH (NO-EFFECT (within null): wins 2, losses 0", self.rows["noisy"])
+        self.assertIn("effect +0.67 vs null 0.67", self.rows["noisy"])
+
+    def test_improvement_beyond_the_null_is_kept(self) -> None:
+        self.assertIn("effect +0.67 vs null 0.00", self.rows["improves"])
+
+    def test_missing_null_arm_decides_nothing(self) -> None:
+        self.assertIn("INSUFFICIENT", self.rows["no-null"])
+        self.assertIn("with2=0", self.rows["no-null"])
+
 
 class PlanTests(unittest.TestCase):
     def test_plan_prints_both_models_and_never_runs(self) -> None:
         res = run("plan", "--current", "model-a", "--candidate", "model-b")
         self.assertEqual(res.returncode, 0, res.stderr)
-        self.assertEqual(res.stdout.count("claude plugin eval ."), 2)
+        self.assertEqual(res.stdout.count("claude plugin eval ."), 4)
+        self.assertEqual(res.stdout.count("--ablation none"), 2)
         self.assertIn("--ablation with-without", res.stdout)
         self.assertIn("worktree add", res.stdout)
 

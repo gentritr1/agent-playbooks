@@ -1,6 +1,6 @@
 ---
 name: ui-motion-quality
-description: Use before shipping or reviewing visual, layout or motion changes, writing pixel, contrast or screenshot gates, or timing from screen recordings.
+description: Before visual, layout or motion changes or reviews, pixel, contrast or screenshot gates, or screen-recording timing.
 ---
 
 # UI and motion quality gates

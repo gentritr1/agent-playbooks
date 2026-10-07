@@ -15,7 +15,7 @@ Each entry: retired id, date, reason, the evidence that retired it, and what wou
 ## PROC-901 · Use a code knowledge graph (Graphify) as project memory
 **Retired id:** PROC-901
 - **Retired:** 2026-10-07
-- **Reason:** 3 of 12 real questions fully correct; 4 of 4 stale answers after edits, exit 0, no warning; realistic token cost 7.5 % higher than grep plus read.
+- **Reason:** 3 of 12 real questions fully correct; 4 of 4 stale answers after edits, exit 0, no warning; realistic cost vs grep plus read: median per question −7.5 %, total +11.5 % (the graph cost more).
 - **Evidence:** arrows-game `docs/process/graphify-trial-2026-10-07.md`.
 - **Replaced by:** PROC-003 for any cache that is used.
 - **Reopen only if:** a ledger shows "who calls X" questions dominate re-read cost, and a new version checks freshness at query time and indexes literal values.
@@ -91,7 +91,7 @@ Source for all four: `~/.claude/CLAUDE.md` §11 "Tool use, measured" (adversaria
 ## TOOL-003 · One simple command per Bash call (general form)
 **Retired id:** TOOL-003
 - **Retired:** 2026-10-07
-- **Reason:** compound commands fail 3.8 % vs 2.0 % per call, but each does ≥ 3× the work, so splitting them raises total failures. The cost is real only in worktree agents, whose guard rejected 298 compound, `cd` or mutating forms.
+- **Reason:** compound commands fail 3.8 % vs 2.0 % per call (OR 2.07, measured), but [inferred] each does several units of work, so splitting them is unlikely to lower total failures. The cost is real only in worktree agents, whose guard rejected 298 compound, `cd` or mutating forms.
 - **Replaced by:** TOOL-007 (the worktree fact).
 - **Reopen only if:** a per-unit-of-work comparison shows compound commands fail more outside worktree agents.
 
@@ -100,7 +100,7 @@ Source for all four: `~/.claude/CLAUDE.md` §11 "Tool use, measured" (adversaria
 - **Retired:** 2026-10-07
 - **Reason:** 21 of the 41 identical-retry loops ended in success, so a hard stop would also cut successes; the threshold of 2 was never tested.
 - **Replaced by:** TOOL-008 (state what changed before repeating).
-- **Reopen only if:** 30 days of hook data show identical retries rarely succeed.
+- **Reopen only if:** the 2026-11-06 harness-audit run (transcripts; the hook logs no outcomes) shows identical retries rarely succeed.
 
 ## TOOL-904 · Dispatch hygiene: check the dispatch list before sending a brief
 **Retired id:** TOOL-904
@@ -135,7 +135,7 @@ Source for all four: `~/.claude/CLAUDE.md` §11 "Tool use, measured" (adversaria
 ## LOOK-902 · ast-grep as the default code-search route
 **Retired id:** LOOK-902
 - **Retired:** 2026-10-07
-- **Reason:** 8 of 12 correct, but 45.8k chars vs 43.3k for plain grep asked with the same specificity: the saving is the narrow question, not the tool. Traps: `-l ts` silently skips `.tsx`; an identifier pattern skips property keys; 3 of ~25 patterns matched nothing and looked like "no results". Allowed ad hoc for structural rewrites.
+- **Reason:** 8 of 12 correct, but 45.8k total chars (total −43.5 % vs baseline; median per question +39.2 %) vs 43.3k for plain grep asked with the same specificity (total −46.6 %; median per question +34.1 %): the saving is the narrow question, not the tool. Traps: `-l ts` silently skips `.tsx`; an identifier pattern skips property keys; 3 of ~25 patterns matched nothing and looked like "no results". Allowed ad hoc for structural rewrites.
 - **Evidence:** as LOOK-901, §2.
 - **Replaced by:** LOOK-001.
 - **Reopen only if:** the eval harness shows it beats refined grep on fresh tasks written without hindsight.

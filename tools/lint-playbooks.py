@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Format + staleness lint for the playbooks (python3 stdlib only).
 
-usage: python3 tools/lint-playbooks.py [ROOT] [--today YYYY-MM-DD] [--max-age-days 90]
+usage: python3 tools/lint-playbooks.py [ROOT] [--today YYYY-MM-DD] [--max-age-days 90] [--no-claude]
 
 Exit 1 (FAIL) on:
   format   - a rule missing any field; a Source id that differs from its heading, is malformed,
@@ -13,8 +13,12 @@ Exit 1 (FAIL) on:
   evidence - an Evidence field without a link into evidence/; any dangling relative link; an
              evidence file with no `Source:` line;
   dates    - a malformed or future last_validated / expires;
-  budget   - a description over 60 words, all descriptions together over 600 tokens, a SKILL.md
-             body over 1,500 tokens (tokens estimated as chars/4);
+  budget   - a description over 60 words; the always-on skill listing over 700 PROJECTED tokens, i.e.
+             the rendered lines `- <plugin>:<name>: <desc>\n` at 2.8 chars/token and, when `claude` is on
+             PATH, the always-on number `claude plugin details` prints; a SKILL.md body over 1,500 tokens
+             (chars/4). chars/4 of the descriptions is still printed for comparison.
+             Calibration: 658 projected / 1,819 chars on 2026-10-07 (2.76 chars/token); after the 0.2.1
+             trims 614 / 1,622 (2.64), so the 2.8 estimate runs ~6 % low and the CLI number decides.
   skill    - frontmatter name != directory, no description, no "## Not covered" section;
   hygiene  - an unparsable plugin manifest; text that looks like a secret or an e-mail address.
 Warn (exit 0) on: a fact/heuristic whose last_validated is older than --max-age-days, an expired
@@ -44,15 +48,44 @@ SECRET_PATTERNS = [
 ]
 MAX_RULES = 15
 MAX_DESC_WORDS = 60
-MAX_DESC_TOKENS_TOTAL = 600
+MAX_LISTING_TOKENS = 700  # projected; RULING R20 (600 was not reachable without dropping trigger words)
+LISTING_CHARS_PER_TOKEN = 2.8
 MAX_BODY_TOKENS = 1500
 HEURISTIC_MAX_DAYS = 90
 RETIRED_ID = re.compile(r"^\*\*Retired id:\*\*\s*([A-Z]{2,6}-\d{3})", re.M)
 
 
 def est_tokens(text: str) -> int:
-    """Token estimate used for every budget: characters / 4, rounded up."""
+    """Token estimate for bodies: characters / 4, rounded up."""
     return -(-len(text) // 4)
+
+
+def listing_line(plugin: str, name: str, desc: str) -> str:
+    """The line Claude Code renders for one skill in the always-on skill listing."""
+    return f"- {plugin}:{name}: {desc}\n"
+
+
+def projected_tokens(chars: int) -> int:
+    return -(-int(chars * 10) // int(LISTING_CHARS_PER_TOKEN * 10))
+
+
+def claude_projection(root: Path, plugin: str) -> tuple[int | None, str]:
+    """Always-on tokens from `claude --plugin-dir ROOT plugin details PLUGIN`; (None, why) when unavailable."""
+    import shutil
+    import subprocess
+    exe = shutil.which("claude")
+    if not exe:
+        return None, "claude not on PATH"
+    try:
+        out = subprocess.run([exe, "--plugin-dir", str(root), "plugin", "details", plugin],
+                             capture_output=True, text=True, timeout=90).stdout
+    except (OSError, subprocess.SubprocessError) as exc:
+        return None, f"claude plugin details failed: {exc.__class__.__name__}"
+    m = re.search(r"Always-on:\s*~?\s*([\d.,]+)\s*(k?)\s*tok", out)
+    if not m:
+        return None, "claude plugin details printed no Always-on line"
+    value = float(m.group(1).replace(",", ""))
+    return int(round(value * (1000 if m.group(2) else 1))), "claude plugin details"
 
 
 def parse_date(stamp: str | None) -> dt.date | None:
@@ -69,6 +102,10 @@ class Report:
         self.errors: list[str] = []
         self.warnings: list[str] = []
         self.desc_tokens_total = 0
+        self.listing_chars = 0
+        self.listing_projected = 0
+        self.claude_projected: int | None = None
+        self.claude_note = "not checked"
 
     def fail(self, where: str, msg: str) -> None:
         self.errors.append(f"FAIL {where}: {msg}")
@@ -174,14 +211,17 @@ def check_rule(rule, skill: Path, root: Path, today: dt.date, max_age: int, rep:
                                 "re-validate or demote before serving it as fact")
 
 
-def lint(root: Path, today: dt.date, max_age: int) -> Report:
+def lint(root: Path, today: dt.date, max_age: int, use_claude: bool = True) -> Report:
     rep = Report()
+    plugin = root.name
     for manifest in (root / ".claude-plugin" / "plugin.json", root / ".claude-plugin" / "marketplace.json"):
         if manifest.exists():
             try:
                 data = json.loads(manifest.read_text(encoding="utf-8"))
                 if not data.get("name"):
                     rep.fail(rel(manifest, root), "missing 'name'")
+                elif manifest.name == "plugin.json":
+                    plugin = data["name"]
             except json.JSONDecodeError as exc:
                 rep.fail(rel(manifest, root), f"invalid JSON: {exc}")
     seen: dict[str, str] = {}
@@ -212,6 +252,7 @@ def lint(root: Path, today: dt.date, max_age: int) -> Report:
             rep.fail(rel(md, root), f"description is {len(desc.split())} words (> {MAX_DESC_WORDS}); "
                                     "it loads into every session, keep only triggers")
         desc_tokens_total += est_tokens(desc)
+        rep.listing_chars += len(listing_line(plugin, skill.name, desc))
         body_tokens = est_tokens(body)
         if body_tokens > MAX_BODY_TOKENS:
             rep.fail(rel(md, root), f"body is ~{body_tokens} tokens (> {MAX_BODY_TOKENS}, chars/4); "
@@ -248,10 +289,17 @@ def lint(root: Path, today: dt.date, max_age: int) -> Report:
                         rep.fail(rel(ev, root), "evidence file has no 'Source:' line naming where the data came from")
                 if ev.resolve() not in linked:
                     rep.warn(rel(ev, root), "evidence file is not linked from SKILL.md")
-    if desc_tokens_total > MAX_DESC_TOKENS_TOTAL:
-        rep.fail("skills/*/SKILL.md", f"descriptions total ~{desc_tokens_total} tokens "
-                                      f"(> {MAX_DESC_TOKENS_TOTAL}, chars/4); they load into every session")
     rep.desc_tokens_total = desc_tokens_total
+    rep.listing_projected = projected_tokens(rep.listing_chars)
+    if rep.listing_projected > MAX_LISTING_TOKENS:
+        rep.fail("skills/*/SKILL.md", f"skill listing ~{rep.listing_projected} projected tokens ({rep.listing_chars} rendered "
+                                      f"chars / {LISTING_CHARS_PER_TOKEN}) > {MAX_LISTING_TOKENS}; it loads into every session")
+    if use_claude and skills:
+        rep.claude_projected, rep.claude_note = claude_projection(root, plugin)
+        if rep.claude_projected is None:
+            rep.warn("claude plugin details", f"projection unavailable ({rep.claude_note}); the 2.8 chars/token estimate stands")
+        elif rep.claude_projected > MAX_LISTING_TOKENS:
+            rep.fail("claude plugin details", f"always-on ~{rep.claude_projected} projected tokens > {MAX_LISTING_TOKENS}")
     for doc in ("README.md", "CONTRIBUTING.md", "CHANGELOG.md"):
         if (root / doc).exists():
             check_links(root / doc, root, rep)
@@ -264,16 +312,19 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("root", nargs="?", default=str(Path(__file__).resolve().parent.parent))
     ap.add_argument("--today", help="override today's date (YYYY-MM-DD), for tests")
     ap.add_argument("--max-age-days", type=int, default=90)
+    ap.add_argument("--no-claude", action="store_true", help="skip `claude plugin details` (tests, offline)")
     args = ap.parse_args(argv)
     root = Path(args.root).resolve()
     today = dt.date.fromisoformat(args.today) if args.today else dt.date.today()
-    rep = lint(root, today, args.max_age_days)
+    rep = lint(root, today, args.max_age_days, use_claude=not args.no_claude)
     n_rules = sum(len(parse_rules(s / "SKILL.md")) for s in skill_dirs(root))
     for line in rep.errors + rep.warnings:
         print(line)
     status = "FAIL" if rep.errors else "PASS"
+    claude = f"~{rep.claude_projected} (claude plugin details)" if rep.claude_projected is not None else f"n/a ({rep.claude_note})"
     print(f"{status}: {len(skill_dirs(root))} skills, {n_rules} rules, "
-          f"descriptions ~{rep.desc_tokens_total} tokens (chars/4), "
+          f"descriptions ~{rep.desc_tokens_total} tokens (chars/4); skill listing {rep.listing_chars} chars, "
+          f"~{rep.listing_projected} projected (chars/{LISTING_CHARS_PER_TOKEN}), {claude}; budget {MAX_LISTING_TOKENS} projected; "
           f"{len(rep.errors)} errors, {len(rep.warnings)} warnings")
     return 1 if rep.errors else 0
 

@@ -18,14 +18,14 @@
 - **Ids** are `PREFIX-NNN`, stable, unique across skills, never reused. Retired ids live in `retired/`.
 - **Kinds.** *Invariant*: safety, irreversibility, owner preference or quality gate; never expires, states why. *Fact*: a measured truth about tools or environment; expires when its versions or conditions change. *Heuristic*: how to do something; states its goal, allows an override with stronger evidence that the agent states in its report, and expires within 90 days of `last_validated`.
 - **Confidence.** VERIFIED means measured, replicated or gate-proven in a named run. INFERRED means plausible and unmeasured; say why.
-- **Valid while.** Backticked `name@version` tokens are compared with the target project by `tools/check-applicability.py` (installed version first, then the declared range). `ctx:` tokens (`android`, `vercel`, `neon`, `postgres`, `web`, `ads`, `react-native`, `expo`, `jest`, `git`, `ios`, `any`) are detected from the project. Free text records platform and conditions.
+- **Valid while.** Backticked `name@version` tokens are compared with the target project by `tools/check-applicability.py` (installed version first, then the declared range). `ctx:` tokens (`android`, `vercel`, `neon`, `postgres`, `web`, `ads`, `react-native`, `expo`, `jest`, `git`, `ios`, `any`) are detected from the project. `claude-code@<version>` tags rules about harness behaviour (timeouts, the worktree guard, the Bash default); it is compared with `claude --version` and is UNKNOWN when the CLI cannot be read. Free text records platform and conditions.
 - **Evidence files** are short extracts, each with a `**Source:**` line naming project paths. No raw transcripts, no secrets, no ad unit ids, no hostnames, no personal data beyond project names.
 - **Prefer goals and gates to procedures.** Write what must be true at the end. Keep a procedure only when the procedure is itself the invariant (the release recipe).
 
-## Budgets (the lint fails above them; tokens = chars / 4)
+## Budgets (the lint fails above them)
 
-- `description`: triggers only, ≤ 60 words; all descriptions together ≤ 600 tokens.
-- `SKILL.md` body ≤ 1,500 tokens. Detail goes to `evidence/`, reached by links. A skill never tells an agent to read all its evidence.
+- `description`: triggers only, ≤ 60 words. The always-on skill listing (each skill rendered as `- agent-playbooks:<name>: <description>`) ≤ 700 projected tokens: rendered chars / 2.8, and the `claude plugin details` always-on number when `claude` is on PATH (CHANGELOG R20). Put the trigger words first; see "Skill listing" in the README for why descriptions can vanish in crowded sessions.
+- `SKILL.md` body ≤ 1,500 tokens (chars / 4). Detail goes to `evidence/`, reached by links. A skill never tells an agent to read all its evidence.
 - 5–7 rules per skill fit the budget; the lint warns above 15.
 
 ## Promotion path: project lesson → playbook
@@ -59,7 +59,7 @@
 
 | Topic | Sources | Resolution |
 |---|---|---|
-| One simple command per call | v0.1.1 TOOL-003 (study draft: compound OR 2.07); §11 (each compound call does ≥ 3× the work) | §11 wins: only the worktree-guard fact stays (TOOL-007); TOOL-003 retired. |
+| One simple command per call | v0.1.1 TOOL-003 (study draft: compound OR 2.07); §11 (a chained call does several units of work: [inferred]) | §11 wins: only the worktree-guard fact stays (TOOL-007); TOOL-003 retired. |
 | Stop after 2 identical failures | study draft (INFERRED threshold); §11 (21 of 41 loops succeeded in the end) | §11 wins: "state what changed" (TOOL-008); TOOL-004 retired. |
 | Is arm64-only faster? | speed audit archive 3.5 vs 7.7 min (confounded); E1 interleaved −237 s inside a 429 s null spread | The controlled run wins: time unproven; the rule rests on byte identity (ANDR-002). |
 | Monitor/background odds ratios as evidence | v0.1.1 PROC-001 cited 0.06 and 0.03; §11 review | Definitional (a detached call cannot hit the cap); PROC-001 cites cap hits and hours instead. |

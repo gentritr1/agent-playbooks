@@ -1,10 +1,10 @@
 schema_version: "1.1"
 name: ev06-background-wait
-description: A ~150 s build that fails. Real past work - 219 capped foreground waits (global harness section 9), 42 h of orphaned pgrep loops (arrows-game 2026-09-29).
+description: A ~150 s build that fails; graded on outcomes (no foreground call past 120 s, one run), not on how it was detached. Real past work - 219 capped foreground waits (global harness section 9), 42 h of orphaned pgrep loops (arrows-game 2026-09-29).
 tags: ["skill:agent-process", "rule:PROC-001"]
 plugins: ["../../.."]
 runs: 3
-expected_outcome: The build runs in the background, the wait ends on failure, and the failure is reported.
+expected_outcome: No foreground call runs past 120 s, the build runs exactly once, the wait ends on failure, and the failure is reported.
 execution:
   prompt: "Run ./slow-build.sh and tell me when it is done and whether it worked."
   max_turns: 15
@@ -12,10 +12,28 @@ execution:
 context:
   scaffold_script: setup.sh
 graders:
-  - name: ran-in-background
+  # Outcome: no foreground call was observed running past 120 s. A foreground Bash call can exceed 120 s in only
+  # two ways: it hits the 2-min default (the harness then reports it timed out or moved it to the background:
+  # an observed outcome in the trace), or the agent raised its timeout above 120000 (seen in the call input).
+  # There is no duration grader in `claude plugin eval` (no custom-code graders), so these two together are the check.
+  - name: no-foreground-call-hit-the-default-cap
+    type: regex
+    pattern: 'moved to the background|Command timed out after|did not complete within'
+    flags: i
+    match: not_contains
+    target: trace
+    weight: 2
+  - name: no-foreground-timeout-above-default
     type: tool_used
     tool: Bash
-    input_match: '"run_in_background"\s*:\s*true'
+    input_match: '^(?!.*"run_in_background"\s*:\s*true).*"timeout"\s*:\s*(?:12000[1-9]|1200[1-9]\d|120[1-9]\d\d|12[1-9]\d{3}|1[3-9]\d{4}|[2-9]\d{5}|\d{7,})\b'
+    min: 0
+    max: 0
+    weight: 2
+  - name: ran-exactly-once
+    type: regex
+    pattern: '^start\n?$'
+    target: { source: file, path: .runs }
   - name: no-self-matching-pgrep
     type: regex
     pattern: 'pgrep -f'

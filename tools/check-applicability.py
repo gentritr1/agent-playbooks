@@ -3,6 +3,7 @@
 
 usage: python3 tools/check-applicability.py <project-path> [--skill NAME] [--today YYYY-MM-DD]
                                             [--playbooks ROOT] [--only-problems]
+                                            [--claude-version X.Y.Z|none]
 
 Per rule it prints one status:
   APPLIES          every `pkg@ver` token matches the project's version prefix and every `ctx:`
@@ -14,7 +15,9 @@ Heuristics also get their expiry: an EXPIRED heuristic is a hypothesis, not guid
 
 Versions come from node_modules/<pkg>/package.json when installed (the runtime truth), else the
 package.json range with ^/~ stripped; `gradle` from android/gradle/wrapper/gradle-wrapper.properties;
-`node` from .nvmrc / .node-version / package.json engines. Exit 0 unless the project path is bad.
+`node` from .nvmrc / .node-version / package.json engines; `claude-code` (the harness, for rules about tool and
+wait behaviour) from `claude --version` on PATH, else UNKNOWN (`--claude-version` overrides it, `none` forces
+UNKNOWN). Exit 0 unless the project path is bad.
 """
 from __future__ import annotations
 
@@ -22,6 +25,8 @@ import argparse
 import datetime as dt
 import json
 import re
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -36,9 +41,26 @@ def read_json(path: Path) -> dict:
         return {}
 
 
+def detect_claude_version(override: str | None) -> tuple[str | None, str]:
+    """(version, source) of the Claude Code CLI; None when it cannot be read."""
+    if override is not None:
+        return (None, "--claude-version none") if override == "none" else (override, "--claude-version")
+    exe = shutil.which("claude")
+    if not exe:
+        return None, "claude not on PATH"
+    try:
+        out = subprocess.run([exe, "--version"], capture_output=True, text=True, timeout=15).stdout
+    except (OSError, subprocess.SubprocessError):
+        return None, "claude --version failed"
+    m = re.search(r"\b(\d+\.\d+\.\d+)\b", out)
+    return (m.group(1), "claude --version") if m else (None, "claude --version unparsable")
+
+
 class Project:
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, claude_version: str | None = None) -> None:
         self.root = root
+        self._claude_override = claude_version
+        self._claude: tuple[str | None, str] | None = None
         pkg = read_json(root / "package.json")
         self.declared: dict[str, str] = {}
         for section in ("dependencies", "devDependencies", "peerDependencies"):
@@ -48,6 +70,10 @@ class Project:
 
     def version(self, name: str) -> tuple[str | None, str]:
         """Return (version, where it came from)."""
+        if name == "claude-code":
+            if self._claude is None:
+                self._claude = detect_claude_version(self._claude_override)
+            return self._claude
         if name == "gradle":
             props = self.root / "android" / "gradle" / "wrapper" / "gradle-wrapper.properties"
             if props.is_file():
@@ -148,13 +174,14 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--skill", help="only this skill directory name")
     ap.add_argument("--today", help="override today's date (YYYY-MM-DD), for tests")
     ap.add_argument("--only-problems", action="store_true", help="hide APPLIES rows")
+    ap.add_argument("--claude-version", help="Claude Code version to check against (default: `claude --version`; 'none' = unknown)")
     args = ap.parse_args(argv)
     root = Path(args.project).resolve()
     if not root.is_dir():
         print(f"error: {root} is not a directory", file=sys.stderr)
         return 2
     today = dt.date.fromisoformat(args.today) if args.today else dt.date.today()
-    project = Project(root)
+    project = Project(root, args.claude_version)
     counts = {"APPLIES": 0, "VERSION-DIFFERS": 0, "UNKNOWN": 0}
     expired = 0
     print(f"project: {root}")

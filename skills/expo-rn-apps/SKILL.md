@@ -1,6 +1,6 @@
 ---
 name: expo-rn-apps
-description: Use before changing Expo/React Native animation, reduced motion, EXPO_PUBLIC flags, Hermes performance, dense rendering, react-native-svg or Android text fitting.
+description: Before Expo/React Native animation, reduced motion, EXPO_PUBLIC flags, Hermes perf, dense rendering, react-native-svg or Android text fitting.
 ---
 
 # Expo / React Native apps
