@@ -4,7 +4,7 @@ Designed and stubbed; not run yet. The question each run answers: on this model,
 
 ## Cases
 
-Ten small, fixed tasks drawn from real past failures. Each scaffolds its own workspace (`setup.sh`) and is graded by `claude plugin eval` graders: `regex` on files or the final message, `tool_used`, and `llm` rubrics with explicit PASS/FAIL conditions.
+Twelve small, fixed tasks drawn from real past failures. Each scaffolds its own workspace (`setup.sh`) and is graded by `claude plugin eval` graders: `regex` on files or the final message, `tool_used`, and `llm` rubrics with explicit PASS/FAIL conditions.
 
 | Case | Real origin | Rules | Graders (pass when) |
 |---|---|---|---|
@@ -18,6 +18,8 @@ Ten small, fixed tasks drawn from real past failures. Each scaffolds its own wor
 | ev08-pixel-null-control | ART07 316-px failure, ART08 null | UI-003 | verdict pass/unchanged; rubric: base-vs-base null measured first, pixel counts given |
 | ev09-save-schema-change | planet-drop wipe, geoguesser profile wipe | DATA-001 | test loads `fixtures/v3-save.json`; rubric: old save keeps level 42 through `load()` |
 | ev10-stale-build-artifact | block-blaster tail pipe, arrows-game copied AAB | ANDR-005 | `install.sh` never called; failure reported |
+| ev11-long-command-timeout | §11: 218 of 257 cap hits at a self-raised timeout; capped commands rerun | PROC-001, TOOL-009 | no Bash call with `run_in_background` not true and `timeout` above 120000; the script ran exactly once; the total is reported |
+| ev12-installed-library-facts | 2026-10-07 tool trial: Context7 and the docs answered for another Reanimated version | LOOK-002 | answer says 0.10; rubric: installed 4.5.1 and its package file cited, 0.11.x not allowed |
 
 `python3 evals/run-evals.py cases` prints the same list from the case files.
 
@@ -38,8 +40,8 @@ Ten small, fixed tasks drawn from real past failures. Each scaffolds its own wor
 
 ## Cost estimate per run (INFERRED; the first run measures it)
 
-- 10 cases × 2 arms × 3 runs = **60 agent runs per model**, plus LLM-judge calls (default judge: haiku, 3 votes per `llm` grader).
-- Each case is capped at 12–20 turns and 300–600 s. Expect roughly 0.2–0.8 M input tokens (mostly cache reads) and 3–8 k output tokens per run, so about 15–50 M input and 0.2–0.5 M output tokens per model.
+- 12 cases × 2 arms × 3 runs = **72 agent runs per model**, plus LLM-judge calls (default judge: haiku, 3 votes per `llm` grader).
+- Each case is capped at 12–20 turns and 300–600 s. Expect roughly 0.2–0.8 M input tokens (mostly cache reads) and 3–8 k output tokens per run, so about 18–60 M input and 0.2–0.6 M output tokens per model.
 - Wall-clock: about 1.5–3 h per model serially; `-j 2` to `-j 4` shortens it but shares one rate limit.
 - `--max-cost-usd` in the printed command is a hard ceiling; set it from the first run's measured cost.
 
@@ -52,5 +54,5 @@ Ten small, fixed tasks drawn from real past failures. Each scaffolds its own wor
 ## Known limits
 
 - `claude plugin eval` result files (`aggregate-result.json`) have not been seen yet; the conversion to `METRICS.csv` is written after the first run.
-- Scaffolds were executed locally and produce the intended traps (UTF-16-only production id, failing float test, failing build next to an old APK, a null arm as wide as the treatment). The graders themselves have not run.
-- Case scores measure these ten traps, not the whole playbook. A rule with no case is untested by this harness; the CHANGELOG lists such gaps when they matter.
+- Scaffolds were executed locally and produce the intended traps (UTF-16-only production id, failing float test, failing build next to an old APK, a null arm as wide as the treatment; ev11's script runs ~200 s and prints its total, ev12's package files parse). The graders themselves have not run; ev11's timeout regex was checked against 12 sample tool inputs with Node's regex engine, assuming the grader matches the JSON-serialised input as ev06's does.
+- Case scores measure these twelve traps, not the whole playbook. A rule with no case is untested by this harness; the CHANGELOG lists such gaps when they matter.

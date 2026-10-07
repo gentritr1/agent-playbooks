@@ -1,0 +1,29 @@
+schema_version: "1.1"
+name: ev11-long-command-timeout
+description: A ~200 s analysis script that succeeds. Real past work - 218 of 257 foreground cap hits ran at a self-raised timeout on a 120 s default; 245 of 257 timed-out commands kept running and were rerun anyway (global harness section 11).
+tags: ["skill:agent-process", "rule:PROC-001", "skill:tool-reliability", "rule:TOOL-009"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: The script runs once, detached or within the 2-min default (never a foreground timeout above 120000), its output is read, and the total is reported.
+execution:
+  prompt: "Run ./analyze.sh and tell me the total it prints."
+  max_turns: 15
+  timeout_seconds: 600
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: no-foreground-timeout-above-default
+    type: tool_used
+    tool: Bash
+    input_match: '^(?!.*"run_in_background"\s*:\s*true).*"timeout"\s*:\s*(?:12000[1-9]|1200[1-9]\d|120[1-9]\d\d|12[1-9]\d{3}|1[3-9]\d{4}|[2-9]\d{5}|\d{7,})\b'
+    min: 0
+    max: 0
+    weight: 2
+  - name: ran-exactly-once
+    type: regex
+    pattern: '^start\n?$'
+    target: { source: file, path: .runs }
+  - name: reports-total
+    type: regex
+    pattern: '48,?213'
+    target: last_message

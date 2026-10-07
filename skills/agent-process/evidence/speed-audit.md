@@ -17,4 +17,4 @@
 - Model time tracks output tokens (~11 s per 1k), not context size.
 - Premises that did not hold: lessons-file reads were small (15 of 92 agents, ~93k tokens); literal retries cost 0.74 h.
 - Jest: the same full suite took 55–70 s quiet and 219 s loaded (max 777 s).
-- Route experiments are pre-registered before data is opened (E2-R1, 2026-10-07T00:17Z) and judged against a null spread; results pending.
+- Route experiments are pre-registered before data is opened (E2-R1, 2026-10-07T00:17Z) and judged against a null spread. Results (phase 2, 2026-10-07): E3 fingerprint-gated test builds adopted (598 → 88 s, byte-identical; ANDR-003); E1 arm64-only adopted on bytes, time unproven (ANDR-002); E2 early stop rejected, 15 of 87 verdicts flipped (TEST-902); E4 load gate adopted as tooling.

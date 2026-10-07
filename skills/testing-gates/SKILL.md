@@ -30,7 +30,7 @@ A gate that cannot fail proves nothing. Each rule below says what must be true b
 - **Kind:** invariant — why: one-shot orderings are coin tosses and a range-inside-range test fails identical builds.
 - **Evidence:** arrows-game 2026-09-25: range-inside-range failed identical builds on 4 of 5 metrics (n=8); 2026-09-30: +2.4034 ms against a 0.0781 ms null, replicated in 16 shuffled runs → [perf-stats](evidence/perf-stats.md)
 - **Confidence:** VERIFIED
-- **Gate:** the report shows n per arm, run order, null spread, effect and p or the replication; no claim below the null spread
+- **Gate:** the report shows n per arm, run order, null spread, effect and p or the replication; no claim below the null spread; the series runs to its planned n (early stop flipped 15 of 87 verdicts, TEST-902)
 - **Valid while:** emulator or device timing · last_validated: 2026-10-07
 - **Source:** TEST-003
 

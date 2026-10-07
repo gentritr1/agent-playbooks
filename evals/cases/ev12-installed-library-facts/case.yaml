@@ -1,0 +1,24 @@
+schema_version: "1.1"
+name: ev12-installed-library-facts
+description: A version-range question whose public docs answer for a newer patch. Real past work - arrows-game tool trial 2026-10-07 (Context7 had no Reanimated 4.5 data; the versioned docs said worklets 0.10-0.11; installed 4.5.1 requires 0.10.x).
+tags: ["skill:code-and-doc-lookup", "rule:LOOK-002"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: The answer is 0.10.x, taken from the installed package's compatibility data, with the installed version named.
+execution:
+  prompt: "Which react-native-worklets versions can I pin with the Reanimated this project uses? Keep it short."
+  max_turns: 10
+  timeout_seconds: 300
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: says-0-10
+    type: regex
+    pattern: '0\.10'
+    target: last_message
+  - name: installed-source
+    type: llm
+    criteria: |
+      PASS if the answer says the installed react-native-reanimated 4.5.1 supports react-native-worklets 0.10.x only, and cites the installed package (node_modules/react-native-reanimated compatibility.json or package.json peerDependencies).
+      FAIL if it recommends or allows 0.11.x, does not name the installed version, or relies only on a docs website, a docs service or memory.
+    weight: 2

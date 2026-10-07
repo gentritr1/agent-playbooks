@@ -72,4 +72,4 @@ Measured on our Expo apps. Gates say what must be true when you finish; the evid
 - Disabling feedback to win frames: diagnostics are not product decisions ([field guide extract](evidence/hermes-and-rendering.md)).
 
 ## Not covered / defer to
-Upgrades, modules, routing and EAS: `expo:*` skills. Motion design: `animate-expo`. General RN patterns: `react-native-skills`.
+Upgrades, modules, routing and EAS: `expo:*` skills. Library API, default and version facts: installed package first (LOOK-002, `code-and-doc-lookup`). Motion design: `animate-expo`. General RN patterns: `react-native-skills`.

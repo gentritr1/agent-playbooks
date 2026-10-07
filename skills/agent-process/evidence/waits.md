@@ -11,5 +11,12 @@
 ## Cross-project study (2026-10-07)
 **Source:** `~/.claude/process-metrics/reports/tool-reliability-2026-10-07.md` (135k calls, 34 projects, 2026-06-24..10-07); full extract in [tool-study](../../tool-reliability/evidence/tool-study.md).
 - Foreground wait loops that hit their limit: 257, 39.0 h; long non-wait foreground commands that timed out: 261, 22.4 h (202 hit the limit, 8 passed on rerun); waits that ended in a timeout: 284, 64.7 h (one background wait that never matched ran 13 h).
-- Within-agent failure odds: Monitor vs until/while+sleep 0.06 (1.6 % vs 23.3 %); long command in background vs foreground 0.03 (0.3 % vs 6.8 %, launch only).
-- The §9 prose rule did not change behaviour: foreground waits hitting the cap were 0.28 % of Bash calls before it and 0.39 % after. The study proposes a hook; that is an owner configuration decision, not part of this playbook.
+- Within-agent failure odds Monitor vs until-loop 0.06 and background vs foreground 0.03 are definitional (a detached call cannot hit the cap), so they are not cited as evidence.
+- The §9 prose rule did not change behaviour: foreground waits hitting the cap were 0.28 % of Bash calls before it and 0.39 % after.
+
+## §11 (owner rule, adversarially reviewed 2026-10-07)
+**Source:** `~/.claude/CLAUDE.md` §11 "Tool use, measured".
+- The Bash default is 120 s. 218 of 257 foreground-wait cap hits ran ≥ 590 s because the agent raised its own `timeout`; a foreground `timeout` above 120000 is a defect to justify in the call description.
+- Every wait terminates on failure and on a deadline, not only on success: one background `until` loop ran 13 h.
+- A cap hit is blocked time, not a dead command (TOOL-009): 245 of 257 wait timeouts kept running in the background.
+- Prose alone did not change the habit, so a PreToolUse hook is on trial (`tools/hooks/fg-wait-guard.sh`, approved 2026-10-07, pending the owner's registration). It is an experiment with success criteria in §11, not a playbook rule.

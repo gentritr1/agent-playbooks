@@ -18,20 +18,20 @@ Measured on a shared macOS host running several agent sessions. Gates say what m
 
 ### ANDR-002 · Test APKs carry only the device ABI
 - **Rule:** Build test APKs for `arm64-v8a` only; release bundles keep `armeabi-v7a,arm64-v8a`.
-- **Kind:** fact — every AVD and phone in use is arm64-v8a, so x86_64 is compiled and never run.
-- **Evidence:** arrows-game 2026-10-07: clean test builds 3.5 min median arm64-only (n=17) vs 7.7 min with x86_64 (n=7), confounded by date and load → [build-time](evidence/build-time.md)
-- **Confidence:** VERIFIED — ABI config read; the time gap is confounded
+- **Kind:** fact — every AVD and phone in use is arm64-v8a; dropping x86_64 leaves the arm64 contents byte-identical, so it only skips work.
+- **Evidence:** arrows-game 2026-10-07 E1 (owner-approved on the bytes): all 947 shared entries identical, only 20 `lib/x86_64` removed; time 835 → 598 s median, inside a 429 s null spread, one pair inverted → [build-time](evidence/build-time.md)
+- **Confidence:** VERIFIED — bytes, 2 pairs; the time saving is INFERRED (unproven on a loaded host)
 - **Gate:** `unzip -l test.apk | grep -c 'lib/x86'` is 0; the release bundle lists both arm ABIs
-- **Valid while:** `ctx:android` · arm64 AVDs on Apple silicon · last_validated: 2026-10-07
+- **Valid while:** `ctx:android` · arm64 AVDs and phone · last_validated: 2026-10-07
 - **Source:** ANDR-002
 
 ### ANDR-003 · Skip the clean rebuild while native inputs are unchanged
-- **Rule:** Build test APKs incrementally while the native fingerprint matches the last prebuild.
-- **Kind:** heuristic — goal: minutes per test build with byte-identical native output; override: stronger case evidence, stated in the report; expires: 2027-01-05
-- **Evidence:** arrows-game 2026-10-07: 31 clean test builds took 3.56 h, median 4.5 min vs 1.1 min incremental → [build-time](evidence/build-time.md)
-- **Confidence:** INFERRED — the byte-identity experiment (E1) has no result yet
-- **Gate:** every non-`META-INF` entry is byte-identical to a clean build of the same tree; any `.so` difference rejects
-- **Valid while:** `expo@57` `react-native@0.86` · last_validated: 2026-10-07
+- **Rule:** Build test APKs incrementally while a fingerprint of every native input equals the last successful build's stamp; a mismatch, missing stamp or failed build means clean. Store builds always build clean (STORE-002, invariant).
+- **Kind:** heuristic — goal: minutes per test build at identical bytes; override: stronger case evidence, stated in the report; expires: 2027-01-05
+- **Evidence:** arrows-game 2026-10-07 E3 (owner-approved): 598 → 88 s median, null spread 133 s, 3 of 3 pairs faster; 3 of 3 APKs byte-identical; Kotlin edit forced clean, TS edit stayed incremental → [build-time](evidence/build-time.md)
+- **Confidence:** VERIFIED — interleaved, replicated, byte-checked
+- **Gate:** before adoption, incremental APK sha256 equals a clean build of the same tree, with a native-edit control that forces clean; release logs show `prebuild --clean`
+- **Valid while:** `expo@57` `react-native@0.86` · hand edits in `node_modules/*/android` unseen · last_validated: 2026-10-07
 - **Source:** ANDR-003
 
 ### ANDR-004 · Measure free disk right before the heavy step

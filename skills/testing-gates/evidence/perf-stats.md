@@ -22,3 +22,6 @@
 - ART-SKINS-08: Classic OFF measured 31–48 ms vs 5–9 ms in the previous round (11.8 GB swap, load 9–25); every treatment number from that round was unusable.
 - Tap forgiveness: the unchanged HEAD measured 3× worse than its 2026-09-01 record on a loaded Mac; only paired differences counted.
 - The field guide (2026-10-07) adds a load gate before a series and a load record before and after every arm.
+
+## Early stopping replayed and rejected (arrows-game 2026-10-07)
+**Source:** arrows-game `docs/process/speed-experiments-2026-10-07.md` (E2, rule E2-R1 pre-registered and committed before any outcome was opened). Replayed on 87 archived A/B(/null) series, 1,894 runs: it would have saved 590 runs (31.2 %), but 15 of 87 series flipped verdict (7 without counting stops on series the report called inconclusive), and with shuffled labels the sequential rule claimed a false effect more often than one fixed-n look in 48 of 87 series. Retired as TEST-902; TEST-003's gate now requires the planned n.
