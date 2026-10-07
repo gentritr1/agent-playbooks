@@ -8,9 +8,9 @@ description: Use before delegating, long waits, worktrees, merges, commits or de
 How the work is run, measured across ~93 helper runs and several projects. The owner's global harness sets the policy; these rules carry its measured scars.
 
 ### PROC-001 · Never block on a wait
-- **Rule:** Run waits in the background, exit on success or failure, and wait on a PID or sentinel file.
+- **Rule:** Run waits, and commands expected to take over ~2 min, in the background or via Monitor; every wait ends on success, failure or a deadline.
 - **Kind:** invariant — why: foreground loops burn the tool cap and orphaned loops load the host for days.
-- **Evidence:** 2026-10-05: 219 calls hit the 10-min cap (37 h); arrows-game 2026-09-29: seven `pgrep -f` loops matched themselves and ran ~42 h → [waits](evidence/waits.md)
+- **Evidence:** 34 projects 2026-10-07: foreground waits 39.0 h, long foreground commands 22.4 h; Monitor vs until-loop odds 0.06, background vs foreground 0.03; arrows-game: `pgrep -f` loops ran ~42 h → [waits](evidence/waits.md)
 - **Confidence:** VERIFIED
 - **Gate:** no foreground poll over 30 s; every wait condition also matches failure (`kill -0 $PID`, a FAILED marker)
 - **Valid while:** Claude Code Bash tool, 10-min cap · last_validated: 2026-10-07
@@ -70,8 +70,8 @@ How the work is run, measured across ~93 helper runs and several projects. The o
 - **Valid while:** owner-run projects · last_validated: 2026-10-01
 - **Source:** PROC-007
 
-## Pending: cross-project tool-reliability study 2026-10-07
-Not yet available: `~/.claude/process-metrics/reports/` does not exist and only `arrows-game.jsonl` is in the ledger. Fill this section from those reports when they land, as rules with the standard fields.
+## Cross-project tool-reliability study 2026-10-07
+Filled 2026-10-07: waits and long commands are PROC-001; file tools, zsh, retries, host load and parked subagents are in the `tool-reliability` skill (TOOL-001..006). The study's own rule list is still a draft for the owner.
 
 ## Not covered / defer to
 Parallel dispatch: `superpowers:dispatching-parallel-agents`, `superpowers:subagent-driven-development`. Worktree mechanics: `superpowers:using-git-worktrees`.

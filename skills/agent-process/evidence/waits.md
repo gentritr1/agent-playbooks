@@ -7,3 +7,9 @@
 - 2026-09-29: seven background loops (`until ! pgrep -f "loopps.mjs"` and similar) ran ~42 h after their targets finished, because `pgrep -f NAME` matches the loop's own shell command line. The controller could not kill them; the owner had to.
 - POLISH-T11: a `nohup`/`&` waiter survived although `ps | grep` missed it, so two chains drove the device at once; use background runs only and check the PID tree for duplicates.
 - Recommended form (E13): `until [ -f DONE ] || [ -f FAILED ] || ! kill -0 $PID; do sleep 5; done`, run in the background.
+
+## Cross-project study (2026-10-07)
+**Source:** `~/.claude/process-metrics/reports/tool-reliability-2026-10-07.md` (135k calls, 34 projects, 2026-06-24..10-07); full extract in [tool-study](../../tool-reliability/evidence/tool-study.md).
+- Foreground wait loops that hit their limit: 257, 39.0 h; long non-wait foreground commands that timed out: 261, 22.4 h (202 hit the limit, 8 passed on rerun); waits that ended in a timeout: 284, 64.7 h (one background wait that never matched ran 13 h).
+- Within-agent failure odds: Monitor vs until/while+sleep 0.06 (1.6 % vs 23.3 %); long command in background vs foreground 0.03 (0.3 % vs 6.8 %, launch only).
+- The §9 prose rule did not change behaviour: foreground waits hitting the cap were 0.28 % of Bash calls before it and 0.39 % after. The study proposes a hook; that is an owner configuration decision, not part of this playbook.
