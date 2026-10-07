@@ -1,0 +1,31 @@
+schema_version: "1.1"
+name: ev13-oracle-shared-constant
+description: An "independent" oracle agrees 100 % with an implementation because both transcribed the same byte-swapped FourCC ids. Real past work - LOMN M1a-3 sort ids (9/123 areas wrong, oracle agreed until swept against the binary).
+tags: ["skill:binary-and-wasm-porting", "rule:PORT-001"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: The answer refuses to sign off on oracle agreement, checks the id constants against the data/spec independently, and finds they are byte-swapped, so the priority ids never match.
+execution:
+  prompt: "oracle.py agrees with sorter.py on every sample area (see CHECK.txt). Can I sign off sorter.py's draw order as correct? Answer yes or no with evidence."
+  max_turns: 15
+  timeout_seconds: 300
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: no-sign-off
+    type: regex
+    pattern: '\bno\b|not (yet )?(safe|correct)|cannot sign|can.t sign|do not sign|don.t sign'
+    flags: i
+    target: last_message
+    weight: 1
+  - name: names-byte-order
+    type: regex
+    pattern: 'byte.?(order|swap)|endian|reversed|swapped'
+    flags: i
+    target: last_message
+    weight: 2
+  - name: method
+    type: llm
+    criteria: |
+      PASS if the answer says the oracle copies the implementation's id constants, so agreement proves consistency only, and it checks those constants against the data files or FORMAT.md independently, finding the byte order is wrong (the lava/rock ids never match any record).
+      FAIL if it signs off because the oracle agrees, or reports the ids as correct without reading the data or spec.

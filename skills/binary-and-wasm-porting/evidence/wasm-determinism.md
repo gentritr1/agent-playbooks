@@ -1,0 +1,10 @@
+# Native == wasm32: byte-identical deterministic traces
+
+**Source:** lomn-web `docs/knowledge/measurements.md` (Runtime: "Native vs wasm32 trace"); lomn-web `docs/knowledge/web-porting-playbook.md` §4; lomn-web `engine/CMakeLists.txt` (lines 14-16) and `Makefile` (`test-wasm`); lomn-web `.superpowers/sdd/2026-10-07-lomn-web-m1a3/progress.md` (Task 2 review minor, Task 8A B2); lomn-web commit `bb49736` (message); lomn-web `.superpowers/sdd/2026-10-07-lomn-web-m1a4/task-4-review.md` (Concern 3).
+
+- Targets: Apple clang arm64 native and Emscripten (`EMSDK_VERSION=6.0.11` in `deps.lock`) wasm32 under Node, null rendering backend.
+- "Native vs wasm32 trace: byte-identical over 600 frames" (`make test-wasm`); `sim_time` 4.0000000968575478 at frame 599 on both. `make test-wasm` `cmp`s the native and wasm32 call logs and state logs after ctest.
+- The build file: "Native clang fuses a*b+c into FMA by default and wasm never does; forbid it so native == wasm32 bit for bit." It sets `target_compile_options(lomn_core PUBLIC -ffp-contract=off)`, so every target linking the core inherits it. The FMA divergence itself was not measured without the flag in these sources.
+- Task 4 review (M1a-4): "native == wasm32 is still enforced, and `-ffp-contract=off` is set on lomn_core ... That is what makes the Python per-op f32 replay bit-exact. Keep it."
+- NaN text (M1a-3 Task 2 review, fixed in Task 8A B2, `bb49736`): the state log printed floats with `%.6g`; "macOS prints 0xffc00000 as 'nan', emscripten/musl as '-nan', so a hostile float broke the native == wasm32 A9 contract". New unit case with −NaN/+NaN/inf/−inf/−0: RED under Node (wasm32), native already printed `nan`; GREEN on both after the log spelled non-finite values itself.
+- Related scars from the same project memory: `%.17g` prints 0.0066666668280959129, not the shortest repr, so compare trace strings to what printf emits; GPU PNG compares need a tolerance (2 pixels differed in 1 of ≥ 17 runs) while null-backend logs stay byte-exact.

@@ -1,0 +1,29 @@
+schema_version: "1.1"
+name: ev14-parser-cap-from-maxima
+description: Harden a parser whose per-record name copies let a crafted 64 MiB table exhaust a 2 GB wasm32 heap. Real past work - LOMN M1a-3 texture table (64 MiB -> 1,273 MB on wasm32; real max 15 records).
+tags: ["skill:binary-and-wasm-porting", "rule:PORT-002"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: table.py caps the record count from the measured sample maximum (15) with at least 16x headroom, stops copying the name per record (or bounds it), every sample still parses, and a rejected parse leaves the previous records untouched.
+execution:
+  prompt: "table.py is also compiled to wasm32 for the browser (2 GB heap, no exceptions). A crafted 64 MiB .tbl file makes it run out of memory. Harden the parser so that cannot happen. Real files are in samples/. Report what you changed and the numbers behind it."
+  max_turns: 20
+  timeout_seconds: 450
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: states-measured-max
+    type: regex
+    pattern: '\b15\b'
+    target: last_message
+    weight: 1
+  - name: cap-in-code
+    type: regex
+    pattern: '(?i)max[_a-z]*\s*=\s*[0-9_]+'
+    target: { source: file, path: table.py }
+    weight: 1
+  - name: method
+    type: llm
+    criteria: |
+      PASS if all hold: the record-count cap was set after measuring the samples' real maximum (15 records), with at least 16x headroom (cap >= 240) and the measurement stated; the per-record copy of the shared name is removed or bounded; every file in samples/ still parses; and a parse that fails leaves the table's previous records unchanged (build into a local, assign on success).
+      FAIL if the cap was guessed without measuring the samples, sits below 16x the real maximum or rejects a real sample, or if a rejected parse can leave partial records behind.
