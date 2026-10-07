@@ -2,7 +2,7 @@
 
 Skills with data: shared, versioned practices that any Claude agent on any project can load before app or website work. Every rule carries measured evidence, a gate that proves it was followed, the conditions it was measured under, and a date after which it is no longer served as fact.
 
-Status: v0.2.1, a private GitHub repository installed as a Claude Code plugin. See "Pending".
+Status: v0.3.0, a private GitHub repository installed as a Claude Code plugin. See "Pending".
 
 ## What is inside
 
@@ -18,6 +18,7 @@ Status: v0.2.1, a private GitHub repository installed as a Claude Code plugin. S
 | `agent-process` | delegation, waits and long commands, worktrees, merges, outward steps, speed changes | 6 |
 | `tool-reliability` | file edits through the shell, zsh quoting and `find`, worktree-agent commands, repeated calls, timeouts, host-load claims, parked subagents | 7 |
 | `code-and-doc-lookup` | code search, library API and version facts, trusting an index, language server or docs service | 3 |
+| `binary-and-wasm-porting` | untrusted-format parsers, caps and fuzzing, independent oracles and cross-checks, wasm32 builds, native-vs-wasm determinism, headless WebGPU tests | 5 |
 
 Each skill has `SKILL.md` (the rules, inline) and `evidence/` (short extracts naming their source files). `retired/` lists rules that evidence disproved; their ids can never come back.
 
@@ -45,15 +46,15 @@ claude plugin validate .                        # manifest check (passes; one wa
 python3 tools/lint-playbooks.py --no-claude     # same lint without calling `claude plugin details`
 ```
 
-## Token budget (measured 2026-10-07, v0.2.1)
+## Token budget (measured 2026-10-07, v0.3.0)
 
 Skill descriptions load into every session, so they are the most expensive bytes.
 
-| Measure | Skill listing (10 skills) | SKILL.md body, each |
+| Measure | Skill listing (11 skills) | SKILL.md body, each |
 |---|---|---|
-| rendered listing lines `- agent-playbooks:<name>: <desc>`, chars / 2.8 (the lint) | 1,622 chars, ~580 projected (v0.2.0: 1,819 chars) | — |
-| `claude --plugin-dir . plugin details agent-playbooks` | ~614 always-on (v0.2.0: ~658) | ~1.6k–2.4k on invoke |
-| chars / 4 of the descriptions alone (old estimate, printed for comparison) | ~318 (v0.2.0: ~368) | 958–1,499 |
+| rendered listing lines `- agent-playbooks:<name>: <desc>`, chars / 2.8 (the lint) | 1,809 chars, ~647 projected (v0.2.1: 1,622 chars, ~580) | — |
+| `claude --plugin-dir . plugin details agent-playbooks` (CLI 2.1.269) | ~441 always-on; the unchanged v0.2.1 tree measures ~396 today, where v0.2.1 recorded ~614 (R35) | ~960–1.5k on invoke |
+| chars / 4 of the descriptions alone (old estimate, printed for comparison) | ~354 (v0.2.1: ~318) | 958–1,499 |
 
 The lint fails above 60 words per description, 700 projected tokens for the listing (estimate or `claude plugin details`, R20), or 1,500 tokens (chars/4) per body.
 
@@ -78,9 +79,10 @@ This cannot be proven in advance. Whether a rule helps or hinders a future model
 
 ## Pending
 
-- The first eval run (designed and stubbed; never run). 12 cases; ev11 and ev12 were added in v0.2.0.
+- The first eval run (designed and stubbed; never run). 14 cases; ev11 and ev12 were added in v0.2.0, ev13 and ev14 in v0.3.0.
 - The `fg-wait-guard` hook ([tools/hooks](tools/hooks/README.md)) is an approved experiment, registered by the owner 2026-10-07 11:45; it is not a rule.
 - TOOL-008 is re-measured with a harness-audit run on 2026-11-06 (its expiry forces the look), from transcripts: the hook logs decisions, not outcomes.
 - The `fg-wait-guard` judgement: `harness-audit --judge-fg-wait` on 2026-11-06 against the frozen baseline.
 - ANDR-002's time saving is unproven on a loaded host; the bytes carry the rule.
-- Claude Code projects ~614 always-on tokens; the budget is 700 projected (R20). In crowded sessions descriptions may still be hidden (see "Skill listing").
+- The lint projects ~647 always-on tokens and Claude Code ~441; the budget is 700 projected (R20). In crowded sessions descriptions may still be hidden (see "Skill listing").
+- PORT-003's deep-reach floor and re-introduced-defect check are INFERRED until LOMN M1a-4 Task 1 records its fuzz results (R30).
