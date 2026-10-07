@@ -61,6 +61,10 @@ class LintTests(unittest.TestCase):
         self.mutate("- **Gate:** `grep -L -- '-s ' scripts/*.sh` prints nothing\n", "")
         self.assertFails("missing field 'Gate'")
 
+    def test_malformed_heading_cannot_hide_a_rule(self) -> None:
+        self.mutate("### DEMO-002 · Build", "### DEMO-002 - Build")
+        self.assertFails("parsed rules")
+
     def test_duplicate_id_fails(self) -> None:
         self.mutate("### DEMO-002 · Build", "### DEMO-001 · Build")
         self.mutate("- **Source:** DEMO-002", "- **Source:** DEMO-001")

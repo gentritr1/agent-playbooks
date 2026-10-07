@@ -219,6 +219,10 @@ def lint(root: Path, today: dt.date, max_age: int) -> Report:
         if not re.search(r"^##\s+Not covered", body, re.M):
             rep.fail(rel(md, root), "no '## Not covered / defer to ...' section")
         rules = parse_rules(md)
+        rule_lines = len(re.findall(r"^-\s+\*\*Rule:\*\*", re.sub(r"```.*?```", "", text, flags=re.S), re.M))
+        if rule_lines != len(rules):
+            rep.fail(rel(md, root), f"{rule_lines} '- **Rule:**' lines but {len(rules)} parsed rules; "
+                                    "a heading must read '### PREFIX-NNN · title'")
         if len(rules) > MAX_RULES:
             rep.warn(rel(md, root), f"{len(rules)} rules inline (> {MAX_RULES}); prefer fewer, sharper rules")
         for rule in rules:
