@@ -1,6 +1,6 @@
 ---
 name: testing-gates
-description: Use before writing or trusting a test, gate, detector or benchmark, comparing A/B performance runs, quoting a percentile, count or threshold, or reviewing a claim that something is fixed.
+description: Use before writing or trusting a test, gate, detector or benchmark, comparing A/B perf runs, or quoting a percentile, count or threshold.
 ---
 
 # Testing gates

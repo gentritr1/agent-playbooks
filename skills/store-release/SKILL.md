@@ -1,6 +1,6 @@
 ---
 name: store-release
-description: Use before building a release AAB or a test-ads build, installing an ads build on any device, preparing Play screenshots, listing, privacy or data-safety text, or verifying ad, review or other Play-only flows.
+description: Use before release AAB or test-ads builds, installing ads builds, Play screenshots or listing, privacy and data-safety text, or Play-only flows.
 ---
 
 # Store release and ads
@@ -21,7 +21,7 @@ Release steps are invariants: the recipe itself is the gate. Every outward step 
 - **Kind:** invariant — why: an untraceable or stale binary reached testers and the store.
 - **Evidence:** geoguesser 2026-09-07: no commit matched the testers' binary; arrows-game 2026-09-29: a failed build copied the previous AAB under a new version (same sha256) → [release-recipe](evidence/release-recipe.md)
 - **Confidence:** VERIFIED
-- **Gate:** `git describe --exact-match` names the build tree; clean prebuild; both arm ABIs; upload certificate matches; versionCode increased; sha256 differs from the previous AAB
+- **Gate:** `git describe --exact-match` names the build tree; a clean build (`prebuild --clean` where `android/` is generated); both arm ABIs; upload certificate matches; versionCode increased; sha256 differs from the previous AAB
 - **Valid while:** `ctx:android` · Play App Signing · last_validated: 2026-10-01
 - **Source:** STORE-002
 

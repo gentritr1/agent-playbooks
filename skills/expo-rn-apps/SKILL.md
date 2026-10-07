@@ -1,6 +1,6 @@
 ---
 name: expo-rn-apps
-description: Use before changing an Expo or React Native app's animation, reduced motion, EXPO_PUBLIC env flags, Hermes performance, dense rendering, react-native-svg or Android text fitting, or before claiming such a change works.
+description: Use before changing Expo/React Native animation, reduced motion, EXPO_PUBLIC flags, Hermes performance, dense rendering, react-native-svg or Android text fitting.
 ---
 
 # Expo / React Native apps
@@ -13,7 +13,7 @@ Measured on our Expo apps. Gates say what must be true when you finish; the evid
 - **Evidence:** arrows-game 2026-09-09: blocker flash, bump and paid hint drew nothing; geoguesser 2026-09-16: delayed `entering` left a view blank on 4 of 5 installs → [reduced-motion](evidence/reduced-motion.md)
 - **Confidence:** VERIFIED
 - **Gate:** a source-audit test fails on any timing call without `reduceMotion`, and a device capture after `transition_animation_scale 0` + relaunch shows the static state
-- **Valid while:** `react-native-reanimated@4.5` · Android API 31 emulator · last_validated: 2026-10-04
+- **Valid while:** `react-native-reanimated@4.1|4.5` · Android API 31 emulator · last_validated: 2026-10-04
 - **Source:** EXPO-001
 
 ### EXPO-002 · Prove an EXPO_PUBLIC value from the built bundle
@@ -22,7 +22,7 @@ Measured on our Expo apps. Gates say what must be true when you finish; the evid
 - **Evidence:** geoguesser 2026-09-16: bundle task `UP-TO-DATE`, store artifact carried the QA bundle (same sha256); arrows-game 2026-09-17: positive control read 0 until `--clear` → [env-inlining](evidence/env-inlining.md)
 - **Confidence:** VERIFIED
 - **Gate:** byte count in the built bundle: new value ≥1, old value 0, a known-present control string ≥1 (UTF-8 and UTF-16LE)
-- **Valid while:** `expo@57` · Gradle JS bundle task · last_validated: 2026-09-17
+- **Valid while:** `expo@54|56|57` · Gradle JS bundle task · last_validated: 2026-09-17
 - **Source:** EXPO-002
 
 ### EXPO-003 · Size JS hot paths on Hermes, not node

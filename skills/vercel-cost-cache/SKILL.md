@@ -1,6 +1,6 @@
 ---
 name: vercel-cost-cache
-description: Use before deploying to Vercel, writing vercel.json headers, rewrites or Cache-Control, adding static assets or a service worker, choosing between a static file and a function, or optimising a Vercel bill.
+description: Use before Vercel deploys, vercel.json headers or rewrites, Cache-Control, static assets or service workers, static-vs-function choices, or Vercel bill work.
 ---
 
 # Vercel cost and caching
@@ -26,11 +26,11 @@ Vercel bills bandwidth, edge requests (a CDN HIT still counts), function invocat
 - **Source:** VERC-002
 
 ### VERC-003 · Inspect the build output before the first deploy
-- **Rule:** Run `vercel build` locally and list what will be published before deploying a new or changed project config.
+- **Rule:** Before a new or changed project config deploys, know exactly which files it publishes.
 - **Kind:** invariant — why: a preset without an output directory publishes the repository root, source and docs included.
 - **Evidence:** gold-pdf-bot 2026-10-04: preset "Other" without `outputDirectory` would publish 98 files including code and docs → [headers](evidence/headers.md)
 - **Confidence:** VERIFIED
-- **Gate:** the static output directory lists only intended public files; a config test pins `outputDirectory`
+- **Gate:** a local `vercel build` output lists only intended public files; a config test pins `outputDirectory`
 - **Valid while:** `ctx:vercel` · Vercel CLI · last_validated: 2026-10-04
 - **Source:** VERC-003
 

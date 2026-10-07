@@ -1,6 +1,6 @@
 ---
 name: agent-process
-description: Use before delegating to a subagent or Codex, waiting on a long command, using worktrees, merging, committing or deleting, trusting a cache or index, or changing how the work itself is done to make it faster.
+description: Use before delegating, long waits, worktrees, merges, commits or deletions, trusting a cache or index, or changing how work is run to go faster.
 ---
 
 # Agent process
@@ -44,7 +44,7 @@ How the work is run, measured across ~93 helper runs and several projects. The o
 - **Source:** PROC-004
 
 ### PROC-005 · One implementer per worktree, cut from a stated SHA
-- **Rule:** Create each worktree yourself from a stated HEAD, give it one implementer, and copy its ignored evidence out before removing it.
+- **Rule:** Each implementer works alone in a worktree whose HEAD is the SHA the brief states, and its ignored evidence outlives the worktree.
 - **Kind:** invariant — why: shared checkouts and wrong bases corrupted work in five projects.
 - **Evidence:** geoguesser 2026-10-02: an isolated worktree was cut from `main`, not the feature branch (same in 2 more projects); 2026-10-04: `worktree remove --force` deleted all ignored evidence → [delegation](evidence/delegation.md)
 - **Confidence:** VERIFIED

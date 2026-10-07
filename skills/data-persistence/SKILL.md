@@ -1,6 +1,6 @@
 ---
 name: data-persistence
-description: Use before changing persisted data or save schemas, writing migrations, configuring Neon or Postgres connection URLs, timeouts or pooling, adding health checks, or estimating database compute cost.
+description: Use before changing persisted data or save schemas, migrations, Neon/Postgres URLs, timeouts or pooling, health checks, or database cost estimates.
 ---
 
 # Data and persistence (Neon / Postgres and client saves)
