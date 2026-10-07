@@ -1,0 +1,11 @@
+{
+  "name": "agent-playbooks",
+  "displayName": "Agent Playbooks",
+  "version": "0.1.0",
+  "description": "Evidence-backed playbooks: measured rules, gates and expiry dates for Expo/React Native, Android builds, UI quality, Vercel caching, Postgres data, testing gates, store release and agent process.",
+  "license": "UNLICENSED",
+  "keywords": ["playbooks", "evidence", "gates", "expo", "android", "vercel", "neon", "testing"],
+  "experimental": {
+    "evals": "evals"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "agent-playbooks-local",
+  "description": "Local marketplace for the agent-playbooks plugin (not published).",
+  "owner": {
+    "name": "agent-playbooks maintainers"
+  },
+  "plugins": [
+    {
+      "name": "agent-playbooks",
+      "source": "./",
+      "description": "Evidence-backed playbooks with gates and staleness checks.",
+      "version": "0.1.0"
+    }
+  ]
+}
