@@ -2,21 +2,22 @@
 
 Skills with data: shared, versioned practices that any Claude agent on any project can load before app or website work. Every rule carries measured evidence, a gate that proves it was followed, the conditions it was measured under, and a date after which it is no longer served as fact.
 
-Status: v0.1, local only. No remote, not installed. See "Pending".
+Status: v0.2.0, a private GitHub repository installed as a Claude Code plugin. See "Pending".
 
 ## What is inside
 
 | Skill | Load it before | Rules |
 |---|---|---|
 | `expo-rn-apps` | Expo/RN animation, reduced motion, EXPO_PUBLIC flags, Hermes perf, dense rendering, react-native-svg | 6 |
-| `android-builds-devices` | Gradle/prebuild, test APKs, adb and emulators, capture harnesses, shared hosts | 7 |
+| `android-builds-devices` | Gradle/prebuild, test APKs (arm64-only, fingerprint-gated incremental), adb and emulators, capture harnesses, shared hosts | 7 |
 | `ui-motion-quality` | visual, layout or motion changes, pixel and contrast gates, recording timing, owner acceptance | 7 |
 | `vercel-cost-cache` | Vercel deploys, headers, caching, static vs function, bill work | 5 |
 | `data-persistence` | save or DB schema changes, Neon/Postgres URLs, timeouts, health checks | 5 |
 | `testing-gates` | tests, detectors, benchmarks, A/B perf, quoted numbers | 7 |
 | `store-release` | release AABs, test-ads proof, Play surfaces, store text | 6 |
-| `agent-process` | delegation, waits, worktrees, merges, caches, speed changes | 7 |
-| `tool-reliability` | file edits through the shell, zsh quoting, chained commands, retries, host-load claims, parked subagents | 6 |
+| `agent-process` | delegation, waits and long commands, worktrees, merges, outward steps, speed changes | 6 |
+| `tool-reliability` | file edits through the shell, zsh quoting and `find`, worktree-agent commands, repeated calls, timeouts, host-load claims, parked subagents | 7 |
+| `code-and-doc-lookup` | code search, library API and version facts, trusting an index, language server or docs service | 3 |
 
 Each skill has `SKILL.md` (the rules, inline) and `evidence/` (short extracts naming their source files). `retired/` lists rules that evidence disproved; their ids can never come back.
 
@@ -45,12 +46,12 @@ claude plugin validate .                        # manifest check (passes; one wa
 
 ## Token budget (measured 2026-10-07)
 
-Skill descriptions load into every session, so they are the most expensive bytes. Figures below are for v0.1.1 (9 skills).
+Skill descriptions load into every session, so they are the most expensive bytes. Figures below are for v0.2.0 (10 skills).
 
-| Measure | Descriptions, all 8 | SKILL.md body, each |
+| Measure | Descriptions, all skills | SKILL.md body, each |
 |---|---|---|
-| chars / 4 (the lint's estimate) | ~324 tokens (9 skills) | 1,077–1,464 |
-| `claude plugin details` projection | ~594 tokens always-on (includes names) | ~1.7k–2.4k on invoke |
+| chars / 4 (the lint's estimate) | ~368 tokens (10 skills) | 947–1,489 |
+| `claude --plugin-dir . plugin details agent-playbooks` projection | ~658 tokens always-on (includes names; v0.1.1: ~594) | ~1.5k–2.4k on invoke |
 
 The lint fails above 60 words per description, 600 tokens for all descriptions, or 1,500 tokens per body, all by chars/4. Claude Code's own projection reads about 1.5× higher for bodies; see CHANGELOG RULING R3.
 
@@ -66,7 +67,8 @@ This cannot be proven in advance. Whether a rule helps or hinders a future model
 
 ## Pending
 
-- The tool-reliability study's own "Proposed §11 rules" are drafts awaiting the owner; TOOL-004 and TOOL-006 stay INFERRED until he rules and the evals measure them.
-- The first eval run (designed and stubbed; never run).
-- A GitHub remote and the repository name: the owner confirms first.
-- Installing the plugin: not done. When approved, either `claude --plugin-dir <path>` per session, or `/plugin marketplace add <path>` then install `agent-playbooks`.
+- The first eval run (designed and stubbed; never run). 12 cases; ev11 and ev12 were added in v0.2.0.
+- The `fg-wait-guard` hook ([tools/hooks](tools/hooks/README.md)) is an approved experiment that starts when the owner registers it; it is not a rule.
+- TOOL-008 is re-measured after 30 days of hook data (its expiry, 2026-11-06, forces the look).
+- ANDR-002's time saving is unproven on a loaded host; the bytes carry the rule.
+- Claude Code projects ~658 always-on tokens, above the 600 the lint enforces by chars/4 (~368); see CHANGELOG R3.

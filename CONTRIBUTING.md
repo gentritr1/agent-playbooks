@@ -55,6 +55,17 @@
 | `android/` committed vs generated | geoguesser-app commits it and never prebuilds; block-blaster and arrows-game generate it | Project convention, not a rule; STORE-002's gate says "clean build (`prebuild --clean` where `android/` is generated)". |
 | Which model or tool implements | manga-reader, blink-heist, futurisma-race, geoguesser-app and planet-drop disagree | Owner preferences without a controlled measurement: excluded until the eval harness compares them. |
 
+## Contradictions resolved in v0.2
+
+| Topic | Sources | Resolution |
+|---|---|---|
+| One simple command per call | v0.1.1 TOOL-003 (study draft: compound OR 2.07); §11 (each compound call does ≥ 3× the work) | §11 wins: only the worktree-guard fact stays (TOOL-007); TOOL-003 retired. |
+| Stop after 2 identical failures | study draft (INFERRED threshold); §11 (21 of 41 loops succeeded in the end) | §11 wins: "state what changed" (TOOL-008); TOOL-004 retired. |
+| Is arm64-only faster? | speed audit archive 3.5 vs 7.7 min (confounded); E1 interleaved −237 s inside a 429 s null spread | The controlled run wins: time unproven; the rule rests on byte identity (ANDR-002). |
+| Monitor/background odds ratios as evidence | v0.1.1 PROC-001 cited 0.06 and 0.03; §11 review | Definitional (a detached call cannot hit the cap); PROC-001 cites cap hits and hours instead. |
+| `find` on `-`-named directories "fails silently (exit 0)" | §11; standalone re-run 2026-10-07 exits 1 with `bfs: error` | Both hold: silent in a pipeline (exit 0, no output), loud alone. TOOL-002 says so. |
+| Where library facts come from | AGENTS.md "read the versioned docs"; 2026-10-07 trial (versioned docs drift to the newest patch) | Installed package first, then the versioned URL (LOOK-002). |
+
 ## Procedures converted to goal + gate in v0.1
 
 Ten source procedures were rewritten as a goal plus gate: EXPO-001 (scale, relaunch, restore steps → static state visible in a capture), EXPO-002 (stop daemon, clear cache, grep → byte counts with control), ANDR-003 (fingerprint and Gradle commands → byte-identical artifact), ANDR-005 (pin Node, check files, compare sha → own exit code and new sha), ANDR-006 (delete dump, wait, check activity → proven screen before input), UI-005 (ffprobe steps → ≥ 90 % frame density), TEST-001 (mutate, run, restore, cmp → listed red run and caught mutants), PROC-001 (loop template → wait matches failure), PROC-005 (create the worktree yourself → HEAD equals the stated SHA), VERC-003 (run `vercel build` → know what publishes). Kept as procedures on purpose: STORE-002 (the release recipe is the invariant) and PROC-006 (one state change per step).
