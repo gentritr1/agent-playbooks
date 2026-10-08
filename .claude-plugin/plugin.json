@@ -1,7 +1,7 @@
 {
   "name": "agent-playbooks",
   "displayName": "Agent Playbooks",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Evidence-backed playbooks: measured rules, gates and expiry dates for Expo/React Native, React Native rendering performance and Skia, Android builds, UI quality, Vercel caching, Postgres data, testing gates, store release, agent process, tool reliability, code/doc lookup and binary/wasm porting.",
   "license": "UNLICENSED",
   "keywords": ["playbooks", "evidence", "gates", "expo", "skia", "android", "vercel", "neon", "testing", "wasm"],

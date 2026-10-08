@@ -1,0 +1,27 @@
+schema_version: "1.1"
+name: ev18-env-change-is-a-deploy
+description: A rotated database password pasted into Vercel without a redeploy, in Neon's copy format. Real past work - gold-pdf-bot incident 1 (2026-10-08).
+tags: ["skill:vercel-cost-cache", "rule:VERC-006"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: The answer says it is not done - redeploy, fix sslmode to verify-full for db.py, test the exact value first and confirm with the next stored request.
+execution:
+  prompt: "Read NOTES.md and db.py and answer the question in NOTES.md."
+  max_turns: 8
+  timeout_seconds: 240
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: says-redeploy
+    type: regex
+    pattern: 'redeploy|new deploy(ment)?|deploy again'
+    flags: i
+    target: last_message
+    weight: 1
+  - name: change-is-a-deploy
+    type: llm
+    criteria: |
+      PASS if the answer says all three: (1) the saved variable is not used until a new deployment, so redeploy now;
+      (2) db.py refuses sslmode=require, so the value must end in sslmode=verify-full (with sslrootcert=system) before
+      it is saved; (3) test the exact value from a shell before saving it, and confirm with the next real request that
+      is stored. FAIL if it says the change is done, or misses the redeploy or the sslmode mismatch.

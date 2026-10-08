@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.6.0 · 2026-10-08
+
+Monitoring by design, from gold-pdf-bot incident 1 (a Neon password reset locked a webhook out of its database for about 3 hours while every failure reason was swallowed or kept only in the failed database). Owner rule of the same day: every critical module ships with its monitor, and a plan that cannot say how is a question for the owner. Sources: gold-pdf-bot `docs/INCIDENTS.md`, `tests/test_reliability.py`, `docs/ALERTS_ROLLOUT.md` section 11; extracts `skills/data-persistence/evidence/monitoring.md`, `skills/vercel-cost-cache/evidence/functions.md`, `skills/data-persistence/evidence/neon.md`. Also written into the owner's global harness (`~/.claude/CLAUDE.md` §12).
+
+- **DATA-006 (new invariant, VERIFIED): critical modules ship with a monitor that runs their own path.** Before building or changing a webhook, database link, sender, data feed or credential, the plan answers: alive signal, a failure reason that survives the failure, where the owner sees it and how fast, free-tier cost, and the drill that turns it red; missing answers go to the owner. Numbers: 1 alert, 1 check-in and 4 batch tries lost; a check-in answered 200 with nothing stored; a 5-minute database pinger would cost ~180 of Neon free's 100 CU-h; 7 of 7 new checks went red when their fix was removed.
+- **DATA-003 (extended):** the health check uses the module's own address and role; the gate adds "red when only the module's password is wrong". The dashboard's own role kept reading while the webhook's login was refused.
+- **VERC-006 (new fact, VERIFIED): a changed variable or credential is a deploy.** Test the exact value from a shell, save, redeploy at once, confirm with the next stored request. About 80 minutes between the edit and the redeploy; then Neon's copy format (`sslmode=require`, refused in 0 ms by a `verify-full` check) and a refused password (247 ms) cost two more redeploys.
+- **Neon facts added to `neon.md`:** a wrong password is refused by the proxy without waking compute; an unknown endpoint host gets the same "password authentication failed"; psycopg 3 connection errors carry no SQLSTATE.
+- **Descriptions:** `data-persistence` gained "or monitoring", `vercel-cost-cache` "or env changes" (29 chars of the 36 R47 left).
+- **Evals:** ev17-monitor-by-design (DATA-006, DATA-003) and ev18-env-change-is-a-deploy (VERC-006); stubbed like the others, not run.
+- Totals: 12 skills, 71 rules (67 VERIFIED, 4 INFERRED; 41 invariants, 20 facts, 10 heuristics); listing 1,953 chars, ~698 projected by the lint, ~476 by `claude plugin details`.
+
+### Rulings
+- **R57 · No new skill.** The listing had 36 chars left (R47) and `agent-process` ~25 tokens of body; the rule lives in `data-persistence`, whose description already triggers on health checks, and the credential step in `vercel-cost-cache`, which triggers on deploys.
+- **R58 · The listing is at 1,953 of 1,960 chars.** Seven chars remain; the next trigger or skill needs a trim or the owner's call on R20's budget.
+- **R59 · DATA-006 is a new rule, not an extension of DATA-003** (as R36): DATA-003 gates one endpoint against a dead URL, DATA-006 gates a plan (five answers) and a set of drills across modules that are not databases (senders, feeds, credentials).
+- **R60 · Confidence VERIFIED for DATA-006 and VERC-006.** Each number was observed in that day's log exports, TradingView's alert list or a named test run; the claim that the five questions would have caught every step is marked inferred in the evidence file, not in the rule.
+- **R61 · No hostnames in the evidence.** The incident's endpoint ids and addresses stay in the project; the extracts say "the production host" and "a test-branch host".
+- **R62 · Version 0.6.0, rebased on 0.5.0.** This work was first prepared as a parallel "0.5.0" with evals ev15/ev16 and rulings R43-R47; another session's 0.5.0 reached main first, so the ids were renumbered (ev17/ev18, R57-R62) and nothing of 0.5.0 was changed.
+
 ## 0.5.0 · 2026-10-08
 
 Rendering performance and GPU motion. Sources: geoguesser-app `docs/engineering-lessons.md` L1–L8 (2026-10-08) and the evidence it names (`docs/plan/evidence/device-2026-10-07/bakeoff/`, `c/art4b-*`, `c/art4b2-*`, `c/snd1-RESULT.md`, `c/reminder/RESULT.md`, `art-4b/crash-1045/`, `scripts/framestats.py`, `bakeoff.sh`, `c-art4b2.sh`, `drive.sh`), commit `0dcc236`, geoguesser-app project memory; the installed `@shopify/react-native-skia` 2.2.12, `react-native-reanimated` 4.1.7 and `react-native-worklets` 0.5.1 sources (lines re-read); arrows-game `docs/performance/field-guide.md`, `docs/perf-mask-rebuild-2026-09-17.md`, `docs/perf-harness.md`, `patches/@shopify+react-native-skia+2.6.2.patch` and arrows-game project memory (both memory folders).
