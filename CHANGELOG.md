@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.5.0 · 2026-10-08
+
+Monitoring by design, from gold-pdf-bot incident 1 (a Neon password reset locked a webhook out of its database for about 3 hours while every failure reason was swallowed or kept only in the failed database). Owner rule of the same day: every critical module ships with its monitor, and a plan that cannot say how is a question for the owner. Sources: gold-pdf-bot `docs/INCIDENTS.md`, `tests/test_reliability.py`, `docs/ALERTS_ROLLOUT.md` section 11; extracts `skills/data-persistence/evidence/monitoring.md`, `skills/vercel-cost-cache/evidence/functions.md`, `skills/data-persistence/evidence/neon.md`. Also written into the owner's global harness (`~/.claude/CLAUDE.md` §12).
+
+- **DATA-006 (new invariant, VERIFIED): critical modules ship with a monitor that runs their own path.** Before building or changing a webhook, database link, sender, data feed or credential, the plan answers: alive signal, a failure reason that survives the failure, where the owner sees it and how fast, free-tier cost, and the drill that turns it red; missing answers go to the owner. Numbers: 1 alert, 1 check-in and 4 batch tries lost; a check-in answered 200 with nothing stored; a 5-minute database pinger would cost ~180 of Neon free's 100 CU-h; 7 of 7 new checks went red when their fix was removed.
+- **DATA-003 (extended):** the health check uses the module's own address and role; the gate adds "red when only the module's password is wrong". The dashboard's own role kept reading while the webhook's login was refused.
+- **VERC-006 (new fact, VERIFIED): a changed variable or credential is a deploy.** Test the exact value from a shell, save, redeploy at once, confirm with the next stored request. About 80 minutes between the edit and the redeploy; then Neon's copy format (`sslmode=require`, refused in 0 ms by a `verify-full` check) and a refused password (247 ms) cost two more redeploys.
+- **Neon facts added to `neon.md`:** a wrong password is refused by the proxy without waking compute; an unknown endpoint host gets the same "password authentication failed"; psycopg 3 connection errors carry no SQLSTATE.
+- **Descriptions:** `data-persistence` gained "or a critical module's monitoring", `vercel-cost-cache` "env or credential changes".
+- **Evals:** ev15-monitor-by-design (DATA-006, DATA-003) and ev16-env-change-is-a-deploy (VERC-006); stubbed like the others, not run.
+- Totals: 11 skills, 67 rules (63 VERIFIED, 4 INFERRED; 40 invariants, 18 facts, 9 heuristics); listing 1,944 chars, ~695 projected by the lint, ~475 by `claude plugin details`.
+
+### Rulings
+- **R43 · No new skill.** The listing was at ~673 of 700 projected tokens and `agent-process` at ~1,475 of its 1,500-token body; a ninth-skill description or a PROC rule would break a budget. The rule lives in `data-persistence`, whose description already triggers on health checks, and the credential step in `vercel-cost-cache`, which triggers on deploys.
+- **R44 · DATA-006 is a new rule, not an extension of DATA-003** (as R36): DATA-003 gates one endpoint against a dead URL, DATA-006 gates a plan (five answers) and a set of drills across modules that are not databases (senders, feeds, credentials).
+- **R45 · Confidence VERIFIED for DATA-006 and VERC-006.** Each number was observed in that day's log exports, TradingView's alert list or a named test run; the claim that the five questions would have caught every step is marked inferred in the evidence file, not in the rule.
+- **R46 · No hostnames in the evidence.** The incident's endpoint ids and addresses stay in the project; the extracts say "the production host" and "a test-branch host".
+- **R47 · Version 0.5.0.** New rule ids are a minor bump (R42).
+
 ## 0.4.0 · 2026-10-08
 
 Results of the memory-tool trial (agents' memory of lessons, rulings and gotchas; can Obsidian and similar tools beat what we use). Source: arrows-game `docs/process/obsidian-memory-trial-2026-10-08.md` (12 memory questions, 536 throwaway note copies, sandboxed; one grader and one question set). Extract: `skills/code-and-doc-lookup/evidence/memory-trials.md`.

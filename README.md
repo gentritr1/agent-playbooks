@@ -2,7 +2,7 @@
 
 Skills with data: shared, versioned practices that any Claude agent on any project can load before app or website work. Every rule carries measured evidence, a gate that proves it was followed, the conditions it was measured under, and a date after which it is no longer served as fact.
 
-Status: v0.4.0, a private GitHub repository installed as a Claude Code plugin. See "Pending".
+Status: v0.5.0, a private GitHub repository installed as a Claude Code plugin. See "Pending".
 
 ## What is inside
 
@@ -46,15 +46,15 @@ claude plugin validate .                        # manifest check (passes; one wa
 python3 tools/lint-playbooks.py --no-claude     # same lint without calling `claude plugin details`
 ```
 
-## Token budget (measured 2026-10-08, v0.4.0)
+## Token budget (measured 2026-10-08, v0.5.0)
 
 Skill descriptions load into every session, so they are the most expensive bytes.
 
 | Measure | Skill listing (11 skills) | SKILL.md body, each |
 |---|---|---|
-| rendered listing lines `- agent-playbooks:<name>: <desc>`, chars / 2.8 (the lint) | 1,883 chars, ~673 projected (v0.3.0: 1,809 chars, ~647) | — |
-| `claude --plugin-dir . plugin details agent-playbooks` (CLI 2.1.269) | ~460 always-on (v0.3.0: ~441; R35 on the drift against v0.2.1's ~614) | ~960–1.5k on invoke |
-| chars / 4 of the descriptions alone (old estimate, printed for comparison) | ~372 (v0.3.0: ~354) | 958–1,499 |
+| rendered listing lines `- agent-playbooks:<name>: <desc>`, chars / 2.8 (the lint) | 1,944 chars, ~695 projected (v0.4.0: 1,883 chars, ~673) | — |
+| `claude --plugin-dir . plugin details agent-playbooks` (CLI 2.1.269) | ~475 always-on (v0.4.0: ~460; R35 on the drift against v0.2.1's ~614) | ~960–1.5k on invoke |
+| chars / 4 of the descriptions alone (old estimate, printed for comparison) | ~387 (v0.4.0: ~372) | 1,297–1,498 (v0.4.0: 958–1,499) |
 
 The lint fails above 60 words per description, 700 projected tokens for the listing (estimate or `claude plugin details`, R20), or 1,500 tokens (chars/4) per body.
 
@@ -84,7 +84,7 @@ This cannot be proven in advance. Whether a rule helps or hinders a future model
 - TOOL-008 is re-measured with a harness-audit run on 2026-11-06 (its expiry forces the look), from transcripts: the hook logs decisions, not outcomes.
 - The `fg-wait-guard` judgement: `harness-audit --judge-fg-wait` on 2026-11-06 against the frozen baseline.
 - ANDR-002's time saving is unproven on a loaded host; the bytes carry the rule.
-- The lint projects ~673 always-on tokens and Claude Code ~460; the budget is 700 projected (R20). In crowded sessions descriptions may still be hidden (see "Skill listing").
+- The lint projects ~695 always-on tokens and Claude Code ~475; the budget is 700 projected (R20). In crowded sessions descriptions may still be hidden (see "Skill listing").
 - PORT-003's deep-reach floor and re-introduced-defect check are INFERRED until LOMN M1a-4 Task 1 records its fuzz results (R30).
 
 ## Candidates not trialled

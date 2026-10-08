@@ -1,0 +1,30 @@
+schema_version: "1.1"
+name: ev15-monitor-by-design
+description: A new webhook that stores to Postgres and notifies Telegram. Real past work - gold-pdf-bot incident 1 (2026-10-08), a refused database login lost data for ~3 h with no visible reason.
+tags: ["skill:data-persistence", "rule:DATA-006", "rule:DATA-003"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: PLAN.md answers alive, why (kept outside the failed database), where and how fast, free-tier cost, and a failure drill for the webhook, or asks the owner for the missing answers.
+execution:
+  prompt: "Do the task in BRIEF.md. Write the plan only; do not write the code yet."
+  max_turns: 12
+  timeout_seconds: 300
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: names-a-drill
+    type: regex
+    pattern: 'drill|simulat|on purpose|wrong password|dead (host|url)'
+    flags: i
+    target: { source: file, path: PLAN.md }
+    weight: 1
+  - name: monitor-by-design
+    type: llm
+    criteria: |
+      PASS if PLAN.md, for the webhook, states all five: (1) a live signal that shows it works (existing traffic or a check),
+      (2) where the failure reason is kept when the database itself is down (a log line or the outgoing message, not only
+      the database), (3) where the owner sees a failure and the worst-case delay, (4) the free-tier cost of any scheduled
+      check, computed (e.g. compute-hours per month), (5) a drill that simulates a failure and shows the check turning red;
+      or it asks the owner explicitly for any of these it cannot decide.
+      FAIL if monitoring is missing, is only "add logging" or "add a health endpoint", or a scheduled database check is
+      proposed without its cost.

@@ -1,6 +1,6 @@
 ---
 name: vercel-cost-cache
-description: Before Vercel deploys, vercel.json headers or rewrites, Cache-Control, static assets or service workers, or Vercel costs.
+description: Before Vercel deploys, env or credential changes, vercel.json headers or rewrites, Cache-Control, static assets or service workers, or Vercel costs.
 ---
 
 # Vercel cost and caching
@@ -52,8 +52,17 @@ Vercel bills bandwidth, edge requests (a CDN HIT still counts), function invocat
 - **Valid while:** `ctx:vercel` · last_validated: 2026-08-23
 - **Source:** VERC-005
 
+### VERC-006 · A changed variable or credential is a deploy
+- **Rule:** Test the exact new value from a shell first, then save it, redeploy at once, and confirm with the next real request that is stored.
+- **Kind:** fact — functions keep the variables of their build: an edited password without a redeploy stayed old for about 80 minutes, and Neon's copy button gives `sslmode=require`, which a `verify-full` check refuses.
+- **Evidence:** gold-pdf-bot 2026-10-08: edit ~14:10, redeploy 15:31; then a copy-format value (refused in 0 ms) and a wrong password (refused in 247 ms, before compute woke) cost two more redeploys → [functions](evidence/functions.md)
+- **Confidence:** VERIFIED
+- **Gate:** the report quotes the local read-only login (`LOGIN OK as <role>`) and the first row stored after the redeploy
+- **Valid while:** `ctx:vercel` · Hobby plan, Python functions · last_validated: 2026-10-08
+- **Source:** VERC-006
+
 ## Gates before you report done
-`curl -sI` per asset class (001, 002); missing-asset check (002); `vercel build` output listing (003); static/ISR marker (004); requests per visit (005).
+`curl -sI` per asset class (001, 002); missing-asset check (002); `vercel build` output listing (003); static/ISR marker (004); requests per visit (005); local login check and first stored row after a variable change (006).
 
 ## Not covered / defer to
 Usage metrics and audits of deployed apps: `vercel-optimize`. Neon cold starts behind functions: `data-persistence`.

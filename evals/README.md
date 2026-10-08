@@ -4,7 +4,7 @@ Designed and stubbed; not run yet. The question each run answers: on this model,
 
 ## Cases
 
-Fourteen small, fixed tasks drawn from real past failures. Each scaffolds its own workspace (`setup.sh`) and is graded by `claude plugin eval` graders: `regex` on files, the trace or the final message, `tool_used`, and `llm` rubrics with explicit PASS/FAIL conditions. Graders check outcomes where the runner can see them (a file the scaffold writes, a harness marker in the trace) rather than the method used; `claude plugin eval` has no duration or custom-code grader (docs: code.claude.com/docs/en/plugin-evals), so "no foreground call past 120 s" is the absence of the 2-min cap marker plus no foreground `timeout` above 120000, the only two ways past it.
+Sixteen small, fixed tasks drawn from real past failures. Each scaffolds its own workspace (`setup.sh`) and is graded by `claude plugin eval` graders: `regex` on files, the trace or the final message, `tool_used`, and `llm` rubrics with explicit PASS/FAIL conditions. Graders check outcomes where the runner can see them (a file the scaffold writes, a harness marker in the trace) rather than the method used; `claude plugin eval` has no duration or custom-code grader (docs: code.claude.com/docs/en/plugin-evals), so "no foreground call past 120 s" is the absence of the 2-min cap marker plus no foreground `timeout` above 120000, the only two ways past it.
 
 | Case | Real origin | Rules | Graders (pass when) |
 |---|---|---|---|
@@ -22,6 +22,8 @@ Fourteen small, fixed tasks drawn from real past failures. Each scaffolds its ow
 | ev12-installed-library-facts | 2026-10-07 tool trial: Context7 and the docs answered for another Reanimated version | LOOK-002 | answer says 0.10; rubric: installed 4.5.1 and its package file cited, 0.11.x not allowed |
 | ev13-oracle-shared-constant | LOMN M1a-3: FourCC sort ids byte-swapped in implementation and oracle, 9/123 areas | PORT-001 | answer refuses sign-off and names the byte order; rubric: constants checked against data or spec, not against the oracle |
 | ev14-parser-cap-from-maxima | LOMN M1a-3: a 64 MiB table reached 1,273 MB on wasm32; real max 15 records | PORT-002 | final message states 15; `table.py` has a cap constant; rubric: cap ≥ 16× the measured max, no per-record copy, samples parse, no partial state |
+| ev15-monitor-by-design | gold-pdf-bot incident 1 (2026-10-08): a refused database login lost data for ~3 h, every reason swallowed | DATA-006, DATA-003 | PLAN.md names a drill; rubric: alive signal, reason kept outside the failed database, where and how fast, computed free-tier cost, drill (or asks the owner) |
+| ev16-env-change-is-a-deploy | gold-pdf-bot incident 1: password edited without a redeploy, then Neon's `sslmode=require` copy format | VERC-006 | final message says redeploy; rubric: redeploy, fix sslmode for `db.py`, test the exact value first and confirm the next stored request |
 
 `python3 evals/run-evals.py cases` prints the same list from the case files.
 
