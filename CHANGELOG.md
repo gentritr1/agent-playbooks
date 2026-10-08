@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.4.0 · 2026-10-08
+
+Results of the memory-tool trial (agents' memory of lessons, rulings and gotchas; can Obsidian and similar tools beat what we use). Source: arrows-game `docs/process/obsidian-memory-trial-2026-10-08.md` (12 memory questions, 536 throwaway note copies, sandboxed; one grader and one question set). Extract: `skills/code-and-doc-lookup/evidence/memory-trials.md`.
+
+- **LOOK-001 (extended to notes).** For a memory or lessons question: `grep -rli` the term, print each matching file with its frontmatter `description:` line, read only the chosen note. 12 of 12 correct, total 45,889 vs 77,768 chars (-41.0 %), median per question +40.1 % saving. Still INFERRED (one grader, one question set; the code control also used hindsight). `last_validated` 2026-10-08, expiry 2027-01-06.
+- **LOOK-003 (new invariant, VERIFIED): writing apps and tools never touch live memory or repo docs.** Use a one-way read-only copy and prove byte-identity by sha256 before and after. basic-memory's default first sync rewrote 528 of 536 notes; an Obsidian "Just once" link update rewrote 3 notes including `MEMORY.md`; a read-only copy kept 492 of 492 identical. Placed in `code-and-doc-lookup` because `agent-process` is at ~1,475 tokens of its 1,500 budget.
+- **PROC-003 (extended).** A tool that serves reads from its own database is an index even with a file watcher; the gate adds an edit followed by an immediate re-read. basic-memory served the old body and description at +0.5 s, fresh at +20 s.
+- **Retired:** LOOK-904 (MCPVault: 9 of 12 correct + 3 partial, total -15.4 %, 10,867 schema chars per session, write/move/delete tools on memory) and LOOK-905 (basic-memory: 10 of 12 + 2 partial, total +1.2 %, 36,730 schema chars, 16-min first index, 528 of 536 notes rewritten, AGPL-3.0), each with reopen conditions. Graphify (PROC-901) and PROC-903 gained a "Re-compared 2026-10-08" line; no new id.
+- **README:** new "Candidates not trialled": Hindsight (NOT TRIALLED, owner decision, not retired) and the Obsidian Local REST API bridge. Skill description gained the triggers "searching memory notes or lessons" and "pointing a note app or tool at memory".
+- **Evals: none added.** LOOK-001's note form needs the owner's memory corpus, which a sandboxed eval case cannot carry. LOOK-003's gate is a hash diff on the target folder, checked in the run that uses the tool.
+- Totals: 11 skills, 65 rules (61 VERIFIED, 4 INFERRED; 39 invariants, 17 facts, 9 heuristics); listing 1,883 chars, ~673 projected by the lint, ~460 by `claude plugin details`.
+
+### Rulings
+- **R36 · The invariant is a new rule, not an extension of an existing one.** LOOK-003 is about writes, LOOK-001 and PROC-003 about reads; a combined rule would have been over budget in `agent-process` and mixed two gates.
+- **R37 · Memory-quality finding stays out of the rules.** The arrows-game memory note that quotes Graphify as "+7.5 %" (median per question -7.5 % saving, total +11.5 %) is a fix for that project's memory, not a transferable rule.
+- **R38 · Hindsight is NOT TRIALLED, not retired.** It was never run, so no id was created; the record is a README entry with the cost and privacy reason, so a later owner decision can reopen it without un-retiring anything.
+- **R39 · Owner-browsing script not vendored.** The one-way copy script is in the trial doc §7; adding it to `tools/` was proposed there and is left for the owner to ask for.
+- **R40 · Confidence of LOOK-003 is VERIFIED.** The claim (these tools wrote to notes; a read-only copy stayed identical) was measured by sha256 in named runs; which other tools write is unmeasured and stated by "any app or tool that can write".
+- **R41 · Tool versions are in `Valid while` text, not backticked tokens.** Obsidian, basic-memory and MCPVault are not npm packages in the target project, so `check-applicability.py` could not compare them; LOOK-003 carries `ctx:any`.
+- **R42 · Version 0.4.0.** A new rule id is a minor bump (as 0.2.0 and 0.3.0), manifests bumped to match.
+
 ## 0.3.0 · 2026-10-07
 
 Lessons from the LOMN web port (a C++17 port of a 2001 PC game to native arm64 and wasm32 WebGPU, players bring their own game files), and a detection gap in `check-applicability.py`. Sources: lomn-web `docs/knowledge/measurements.md`, `docs/knowledge/audits/2026-10-07-m1a1-parser-security.md` and `2026-10-07-m1a3-osi-textures-parser-security.md`, `docs/knowledge/web-porting-playbook.md`, the SDD ledgers `.superpowers/sdd/2026-10-07-lomn-web-m1a3/progress.md`, `.superpowers/sdd/2026-10-07-lomn-web-m1a4/progress.md` and `task-4-review.md`, commits `74a5a69`, `2856ce9`, `bb49736`, and lomn-web project memory.

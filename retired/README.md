@@ -20,6 +20,7 @@ Each entry: retired id, date, reason, the evidence that retired it, and what wou
 - **Replaced by:** PROC-003 for any cache that is used.
 - **Reopen only if:** a ledger shows "who calls X" questions dominate re-read cost, and a new version checks freshness at query time and indexes literal values.
 - **Re-compared 2026-10-07:** on the same 12 questions Serena and ast-grep did better (6 and 8 correct vs 3) and were also rejected (LOOK-901, LOOK-902); the tool-reliability study found no new reason (errors a code map could prevent total under 2 h).
+- **Re-compared 2026-10-08:** refined grep still wins. On 12 memory questions no indexed route beat it: it was 12 of 12 correct at total −41.0 % (median per question +40.1 %); an Obsidian MCP server (LOOK-904), basic-memory (LOOK-905) and an in-house description and backlink index (11 of 12, total −37.2 %) cost more or equalled it and went stale or needed a guard. Graphify itself was not re-run; no new reason to reopen.
 
 ## PROC-902 · "Builds are the main time sink; optimise them first"
 **Retired id:** PROC-902
@@ -35,6 +36,7 @@ Each entry: retired id, date, reason, the evidence that retired it, and what wou
 - **Reason:** only 15 of 92 helpers read it, ~93k tokens in total (< 0.3 h); below the 3× payback rule.
 - **Evidence:** arrows-game `docs/process/speed-audit-2026-10-07.md` (E7).
 - **Reopen only if:** the ledger shows lessons reads above 1 h per window.
+- **Re-compared 2026-10-08:** a 153-line description and backlink index (stdlib) lost to refined grep on 12 memory questions (11 of 12 correct with one grep fallback; total −37.2 % vs −41.0 %; median per question +11.2 % vs +40.1 %); with its fingerprint check off it served 3 of 3 edits stale. Reopen only if "what links to X" questions show up in the ledger.
 
 ## EXPO-901 · Cancel Reanimated animations in effect cleanup to stop "synchronouslyUpdateUIProps failed for tag" warnings
 **Retired id:** EXPO-901
@@ -147,3 +149,21 @@ Source for all four: `~/.claude/CLAUDE.md` §11 "Tool use, measured" (adversaria
 - **Evidence:** as LOOK-901, §3.
 - **Replaced by:** LOOK-002.
 - **Reopen only if:** it lists the exact installed versions; then re-run questions D1–D11.
+
+## Rejected route experiments (arrows-game, 2026-10-08): notes as agent memory
+
+## LOOK-904 · An Obsidian MCP server (MCPVault) as agent memory
+**Retired id:** LOOK-904
+- **Retired:** 2026-10-08
+- **Reason:** 9 of 12 memory questions correct, 3 partial, 0 wrong; to full answers total 65.8k chars vs 77.8k baseline (total −15.4 %; median per question −7.0 %, so a typical question cost more), against refined grep at total −41.0 % and median +40.1 %. 10,867 chars of tool schemas (18 tools) per session; each search re-reads every file (0.5-11 s under load); no backlink tool; its write, patch, move and delete tools are pointed at the memory (LOOK-003). Fresh after edits (3 of 3), MIT, no network code found.
+- **Evidence:** arrows-game `docs/process/obsidian-memory-trial-2026-10-08.md` §3, §4; extract in `skills/code-and-doc-lookup/evidence/memory-trials.md`.
+- **Replaced by:** LOOK-001 (note form) and LOOK-003.
+- **Reopen only if:** the harness defers MCP schemas, a read-only mode removes the write tools, and refined grep loses on a fresh question set written without hindsight.
+
+## LOOK-905 · basic-memory as agent memory
+**Retired id:** LOOK-905
+- **Retired:** 2026-10-08
+- **Reason:** 10 of 12 correct, 2 partial, 0 wrong; total +1.2 % vs baseline (median per question −30.9 %); 36,730 chars of tool schemas and instructions per session; first index 979 s (16.3 min) and a CLI reindex re-embedded all 538 notes after 3 edits. Its default first sync rewrote 528 of 536 notes (LOOK-003). In the configuration that leaves notes untouched its graph returned 0 relations and `read_note("SKILL")` failed on a duplicate title. `read_note` served the old text 0.5 s after an edit (PROC-003). AGPL-3.0; 808 MB installed.
+- **Evidence:** as LOOK-904.
+- **Replaced by:** LOOK-001 (note form), LOOK-003 and PROC-003.
+- **Reopen only if:** a release indexes without writing to the notes and resolves them by path, and then wins on a fresh question set written without hindsight.
