@@ -1,6 +1,6 @@
 ---
 name: expo-rn-apps
-description: Before Expo/React Native animation, reduced motion, EXPO_PUBLIC flags, Hermes perf, dense rendering, react-native-svg or Android text fitting.
+description: Before Expo/React Native animation, reduced motion, EXPO_PUBLIC flags, Hermes perf, react-native-svg or Android text fitting.
 ---
 
 # Expo / React Native apps
@@ -8,12 +8,12 @@ description: Before Expo/React Native animation, reduced motion, EXPO_PUBLIC fla
 Measured on our Expo apps. Gates say what must be true when you finish; the evidence says why. A rule marked VERSION-DIFFERS by `tools/check-applicability.py` is unverified in your project.
 
 ### EXPO-001 · Every Reanimated animation declares its reduced-motion behaviour
-- **Rule:** Give each `withTiming`/`withSpring`/`entering` an explicit `reduceMotion`, and give motion that carries information a static stand-in.
-- **Kind:** invariant — why: with the OS setting on, default animations jump to their end state and players lose the feedback.
-- **Evidence:** arrows-game 2026-09-09: blocker flash, bump and paid hint drew nothing; geoguesser 2026-09-16: delayed `entering` left a view blank on 4 of 5 installs → [reduced-motion](evidence/reduced-motion.md)
+- **Rule:** Give each `withTiming`/`withSpring`/`entering` an explicit `reduceMotion`, give motion that carries information a static stand-in, and run timing evidence with motion both ON and OFF.
+- **Kind:** invariant — why: with the OS setting on, default animations jump to their end state and players lose the feedback; evidence taken at scale 0 covers only that branch.
+- **Evidence:** arrows-game 2026-09-09: blocker flash, bump and paid hint drew nothing; 2026-09-19: the perf harness measured only the scale-0 variant; geoguesser 2026-09-16: delayed `entering` left a view blank on 4 of 5 installs; 2026-10-08: a cue fix's device log and 5 tests all ran at scale 0 → [reduced-motion](evidence/reduced-motion.md)
 - **Confidence:** VERIFIED
-- **Gate:** a source-audit test fails on any timing call without `reduceMotion`, and a device capture after `transition_animation_scale 0` + relaunch shows the static state
-- **Valid while:** `react-native-reanimated@4.1|4.5` · Android API 31 emulator · last_validated: 2026-10-04
+- **Gate:** a source-audit test fails on any timing call without `reduceMotion`; a device capture after `transition_animation_scale 0` + relaunch shows the static state; timing or perf results print the read-back scales, ON and OFF
+- **Valid while:** `react-native-reanimated@4.1|4.5` · Android API 31 and 36 emulators · last_validated: 2026-10-08
 - **Source:** EXPO-001
 
 ### EXPO-002 · Prove an EXPO_PUBLIC value from the built bundle
@@ -34,15 +34,6 @@ Measured on our Expo apps. Gates say what must be true when you finish; the evid
 - **Valid while:** `react-native@0.86` Hermes · last_validated: 2026-09-25
 - **Source:** EXPO-003
 
-### EXPO-004 · Fix dense rendering by ownership, not by "go native"
-- **Rule:** Remove per-item multiplicity first, then give static geometry one retained, bounded owner.
-- **Kind:** heuristic — goal: active-frame p95 inside the gate on the densest scene; override: stronger case evidence, stated in the report; expires: 2026-11-30
-- **Evidence:** arrows-game 2026-09-01: ~750 SVG nodes; first native display list 125.6 ms p95, retained native view 11.45 ms (gate 20 ms), emulator only → [hermes-and-rendering](evidence/hermes-and-rendering.md)
-- **Confidence:** VERIFIED — API 31 emulator; no phone or iOS soak
-- **Gate:** release soak passes the frame gates against a same-build null (TEST-003)
-- **Valid while:** `expo@57` `react-native@0.86` · API 31 emulator, host GPU · last_validated: 2026-09-01
-- **Source:** EXPO-004
-
 ### EXPO-005 · One Svg, sized by its parent
 - **Rule:** Draw many shapes as Paths in one `Svg`, and size it with a `View` plus `width="100%"`.
 - **Kind:** fact — Android `SvgView` rasterises each Svg into its own bitmap and `parseInt`s numeric sizes.
@@ -62,7 +53,7 @@ Measured on our Expo apps. Gates say what must be true when you finish; the evid
 - **Source:** EXPO-006
 
 ## Gates before you report done
-- Reduced motion: EXPO-001 audit test plus the device capture.
+- Reduced motion: EXPO-001 audit test, the device capture, timing evidence ON and OFF.
 - Env flags: EXPO-002 bundle counts, with the positive control.
 - Perf: a release build on the target runtime, against a null (TEST-003).
 - Layout or event edits: open the screen on a device (UI-002).
@@ -72,4 +63,4 @@ Measured on our Expo apps. Gates say what must be true when you finish; the evid
 - Disabling feedback to win frames: diagnostics are not product decisions ([field guide extract](evidence/hermes-and-rendering.md)).
 
 ## Not covered / defer to
-Upgrades, modules, routing and EAS: `expo:*` skills. Library API, default and version facts: installed package first (LOOK-002, `code-and-doc-lookup`). Motion design: `animate-expo`. General RN patterns: `react-native-skills`.
+Dense or per-frame drawing, Skia, layer fades, gfxinfo (EXPO-004, REND-*): `rn-render-perf`. Upgrades, modules, routing and EAS: `expo:*` skills. Library API, default and version facts: installed package first (LOOK-002, `code-and-doc-lookup`). Motion design: `animate-expo`. General RN patterns: `react-native-skills`.

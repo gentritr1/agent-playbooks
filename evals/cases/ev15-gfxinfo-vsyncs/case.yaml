@@ -1,0 +1,28 @@
+schema_version: "1.1"
+name: ev15-gfxinfo-vsyncs
+description: Score a spin from a gfxinfo framestats dump where two windows share every vsync, latency is pipelined above one period and every vsync misses its deadline. Real past work - geoguesser globe bake-off 2026-10-08 (85 rows read as frames, ~100 % "janky", Android's own summary 0.43 %).
+tags: ["skill:rn-render-perf", "rule:REND-005", "rule:TEST-004"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: One dropped frame in the spin (42 of 43 vsyncs drawn); rows are grouped by IntendedVsync, and neither latency above 16.7 ms nor the deadline misses are reported as jank.
+execution:
+  prompt: "Did the globe spin drop frames? The dump is framestats.txt, the spin window is in spin.log, context in NOTES.md. Give the number of dropped frames and how you counted them."
+  max_turns: 15
+  timeout_seconds: 300
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: one-dropped-frame
+    type: regex
+    # Matches "1 dropped frame", "dropped frames: 1", "1 vsync was dropped"; does NOT match "1 missed its deadline"
+    # (checked in Python and Node against 6 positive and 4 negative phrasings). The rubric below also fails an answer
+    # that counts deadline misses as drops.
+    pattern: '\b(1|one) (dropped|skipped|missing|missed) (frames?|vsyncs?)\b|\b(dropped|skipped|missed|missing) (frames?|vsyncs?)\W{0,3}(=|:|was|were|is)?\s*(1|one)\b|\b(1|one) (frame|vsync) (was |is )?(dropped|skipped|never (drawn|produced))'
+    flags: i
+    target: last_message
+    weight: 2
+  - name: method
+    type: llm
+    criteria: |
+      PASS if the answer groups the PROFILEDATA rows by IntendedVsync (about 42 vsyncs in the window, not 84-86 frames), counts dropped frames from gaps between consecutive vsyncs (exactly 1), reconciles the vsync count with the window length at 60 Hz (about 43 expected), and says that latency above one period and the FrameDeadline misses are not dropped frames here.
+      FAIL if it reports roughly 84-86 frames, calls the spin ~100 % janky, or counts the deadline misses or the latency rule as dropped frames.

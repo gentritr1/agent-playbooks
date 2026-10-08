@@ -167,3 +167,11 @@ Source for all four: `~/.claude/CLAUDE.md` §11 "Tool use, measured" (adversaria
 - **Evidence:** as LOOK-904.
 - **Replaced by:** LOOK-001 (note form), LOOK-003 and PROC-003.
 - **Reopen only if:** a release indexes without writing to the notes and resolves them by path, and then wins on a fresh question set written without hindsight.
+
+## REND-002 · Skia 2.2.12 and Reanimated 4.1 do what their source says (four workarounds)
+**Retired id:** REND-002
+- **Retired:** 2026-10-08 (v0.5.0 review, before it shipped)
+- **Reason:** demoted, not disproved: one project's source reading with no measured number (equal shared-value writes skipped, `<ImageShader sampling>` turned cubic, `Skia.Data.fromURI` never settling on a bad URI, `opaque` swapping in a SurfaceView). Its body budget paid for the "order of work" path in `rn-render-perf`.
+- **Evidence:** the facts and their file:line citations stay in `skills/rn-render-perf/evidence/skia-lifecycle.md`.
+- **Replaced by:** LOOK-002 (read the installed source) for the method.
+- **Reopen only if:** a device run or a second project measures one of the four behaviours (a lost redraw, a blurred shader, a hung load, frames missing from gfxinfo); open a new id.

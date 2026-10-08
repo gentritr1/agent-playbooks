@@ -1,6 +1,6 @@
 ---
 name: code-and-doc-lookup
-description: Before searching code for callers or writers, searching memory notes or lessons, library API or version-range lookups, pointing a note app or tool at memory, or trusting an index, language server or docs service.
+description: Before searching callers or writers, memory or lessons, library APIs or versions, pointing note tools at memory, or trusting an index, language server or docs service.
 ---
 
 # Code and doc lookup

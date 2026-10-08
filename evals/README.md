@@ -4,7 +4,7 @@ Designed and stubbed; not run yet. The question each run answers: on this model,
 
 ## Cases
 
-Fourteen small, fixed tasks drawn from real past failures. Each scaffolds its own workspace (`setup.sh`) and is graded by `claude plugin eval` graders: `regex` on files, the trace or the final message, `tool_used`, and `llm` rubrics with explicit PASS/FAIL conditions. Graders check outcomes where the runner can see them (a file the scaffold writes, a harness marker in the trace) rather than the method used; `claude plugin eval` has no duration or custom-code grader (docs: code.claude.com/docs/en/plugin-evals), so "no foreground call past 120 s" is the absence of the 2-min cap marker plus no foreground `timeout` above 120000, the only two ways past it.
+Sixteen small, fixed tasks drawn from real past failures. Each scaffolds its own workspace (`setup.sh`) and is graded by `claude plugin eval` graders: `regex` on files, the trace or the final message, `tool_used`, and `llm` rubrics with explicit PASS/FAIL conditions. Graders check outcomes where the runner can see them (a file the scaffold writes, a harness marker in the trace) rather than the method used; `claude plugin eval` has no duration or custom-code grader (docs: code.claude.com/docs/en/plugin-evals), so "no foreground call past 120 s" is the absence of the 2-min cap marker plus no foreground `timeout` above 120000, the only two ways past it.
 
 | Case | Real origin | Rules | Graders (pass when) |
 |---|---|---|---|
@@ -22,6 +22,8 @@ Fourteen small, fixed tasks drawn from real past failures. Each scaffolds its ow
 | ev12-installed-library-facts | 2026-10-07 tool trial: Context7 and the docs answered for another Reanimated version | LOOK-002 | answer says 0.10; rubric: installed 4.5.1 and its package file cited, 0.11.x not allowed |
 | ev13-oracle-shared-constant | LOMN M1a-3: FourCC sort ids byte-swapped in implementation and oracle, 9/123 areas | PORT-001 | answer refuses sign-off and names the byte order; rubric: constants checked against data or spec, not against the oracle |
 | ev14-parser-cap-from-maxima | LOMN M1a-3: a 64 MiB table reached 1,273 MB on wasm32; real max 15 records | PORT-002 | final message states 15; `table.py` has a cap constant; rubric: cap ≥ 16× the measured max, no per-record copy, samples parse, no partial state |
+| ev15-gfxinfo-vsyncs | geoguesser globe bake-off 2026-10-08: ~85 framestats rows read as frames, ~100 % "janky" | REND-005, TEST-004 | final message reports 1 dropped frame; rubric: rows grouped by IntendedVsync (42 of ~43 vsyncs), latency and deadline misses not called drops |
+| ev16-spike-deadline | geoguesser ART-4b 2026-10-08: a 200 ms deadline from a 16–43 ms spike; 8 of 8 cold starts took 503–3,259 ms | REND-003 | `PLAN.md` cites the cold-start data and warms at idle; rubric: nothing visible waits, play at the first entrance after warm-up, deadline from a cold-start probe |
 
 `python3 evals/run-evals.py cases` prints the same list from the case files.
 
@@ -43,9 +45,9 @@ Fourteen small, fixed tasks drawn from real past failures. Each scaffolds its ow
 
 ## Cost estimate per run (INFERRED; the first run measures it)
 
-- 14 cases × 3 arms (with, without, with2) × 3 runs = **126 agent runs per model**, plus LLM-judge calls (default judge: haiku, 3 votes per `llm` grader).
-- Each case is capped at 12–20 turns and 300–600 s. Expect roughly 0.2–0.8 M input tokens (mostly cache reads) and 3–8 k output tokens per run, so about 25–101 M input and 0.4–1.0 M output tokens per model (126 runs × the per-run range).
-- Wall-clock: about 2.7–5.3 h per model serially (v0.2 estimate scaled by 14/12); `-j 2` to `-j 4` shortens it but shares one rate limit.
+- 16 cases × 3 arms (with, without, with2) × 3 runs = **144 agent runs per model**, plus LLM-judge calls (default judge: haiku, 3 votes per `llm` grader).
+- Each case is capped at 12–20 turns and 300–600 s. Expect roughly 0.2–0.8 M input tokens (mostly cache reads) and 3–8 k output tokens per run, so about 29–115 M input and 0.4–1.2 M output tokens per model (144 runs × the per-run range).
+- Wall-clock: about 3.1–6.1 h per model serially (v0.2 estimate scaled by 16/12); `-j 2` to `-j 4` shortens it but shares one rate limit.
 - `--max-cost-usd` in the printed command is a hard ceiling; set it from the first run's measured cost.
 
 ## When to run
@@ -57,5 +59,5 @@ Fourteen small, fixed tasks drawn from real past failures. Each scaffolds its ow
 ## Known limits
 
 - `claude plugin eval` result files (`aggregate-result.json`) have not been seen yet; the conversion to `METRICS.csv` is written after the first run.
-- Scaffolds were executed locally and produce the intended traps (UTF-16-only production id, failing float test, failing build next to an old APK, a null arm as wide as the treatment; ev11's script runs ~200 s and prints its total, ev12's package files parse; ev13's oracle prints 3/3 equal while no record matches either priority id; ev14's 18 samples peak at 15 records and a 4 MB crafted table took ~386 MB RSS in the unhardened parser). The graders themselves have not run; ev11's timeout regex was checked against 12 sample tool inputs with Node's regex engine, assuming the grader matches the JSON-serialised input as ev06's does.
-- Case scores measure these twelve traps, not the whole playbook. A rule with no case is untested by this harness; the CHANGELOG lists such gaps when they matter.
+- Scaffolds were executed locally and produce the intended traps (UTF-16-only production id, failing float test, failing build next to an old APK, a null arm as wide as the treatment; ev11's script runs ~200 s and prints its total, ev12's package files parse; ev13's oracle prints 3/3 equal while no record matches either priority id; ev14's 18 samples peak at 15 records and a 4 MB crafted table took ~386 MB RSS in the unhardened parser; ev15's dump scores 42 vsyncs of ~43 expected, 84 rows, 1 missed vsync and 42 deadline misses with geoguesser-app's `framestats.py`; ev16's 8 cold starts are all above 200 ms). The graders themselves have not run; ev11's timeout regex was checked against 12 sample tool inputs with Node's regex engine, assuming the grader matches the JSON-serialised input as ev06's does.
+- Case scores measure these sixteen traps, not the whole playbook. A rule with no case is untested by this harness; the CHANGELOG lists such gaps when they matter.

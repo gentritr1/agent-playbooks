@@ -2,13 +2,14 @@
 
 Skills with data: shared, versioned practices that any Claude agent on any project can load before app or website work. Every rule carries measured evidence, a gate that proves it was followed, the conditions it was measured under, and a date after which it is no longer served as fact.
 
-Status: v0.4.0, a private GitHub repository installed as a Claude Code plugin. See "Pending".
+Status: v0.5.0, a private GitHub repository installed as a Claude Code plugin. See "Pending".
 
 ## What is inside
 
 | Skill | Load it before | Rules |
 |---|---|---|
-| `expo-rn-apps` | Expo/RN animation, reduced motion, EXPO_PUBLIC flags, Hermes perf, dense rendering, react-native-svg | 6 |
+| `expo-rn-apps` | Expo/RN animation, reduced motion, EXPO_PUBLIC flags, Hermes perf, react-native-svg, Android text fit | 5 |
+| `rn-render-perf` | dense or animated RN drawing (ownership, per-frame boundary traffic), Skia Canvas lifecycle, readiness deadlines, layer compositing, gfxinfo frame stats, an order of work | 5 |
 | `android-builds-devices` | Gradle/prebuild, test APKs (arm64-only, fingerprint-gated incremental), adb and emulators, capture harnesses, shared hosts | 7 |
 | `ui-motion-quality` | visual, layout or motion changes, pixel and contrast gates, recording timing, owner acceptance | 7 |
 | `vercel-cost-cache` | Vercel deploys, headers, caching, static vs function, bill work | 5 |
@@ -46,15 +47,15 @@ claude plugin validate .                        # manifest check (passes; one wa
 python3 tools/lint-playbooks.py --no-claude     # same lint without calling `claude plugin details`
 ```
 
-## Token budget (measured 2026-10-08, v0.4.0)
+## Token budget (measured 2026-10-08, v0.5.0)
 
 Skill descriptions load into every session, so they are the most expensive bytes.
 
-| Measure | Skill listing (11 skills) | SKILL.md body, each |
+| Measure | Skill listing (12 skills) | SKILL.md body, each |
 |---|---|---|
-| rendered listing lines `- agent-playbooks:<name>: <desc>`, chars / 2.8 (the lint) | 1,883 chars, ~673 projected (v0.3.0: 1,809 chars, ~647) | — |
-| `claude --plugin-dir . plugin details agent-playbooks` (CLI 2.1.269) | ~460 always-on (v0.3.0: ~441; R35 on the drift against v0.2.1's ~614) | ~960–1.5k on invoke |
-| chars / 4 of the descriptions alone (old estimate, printed for comparison) | ~372 (v0.3.0: ~354) | 958–1,499 |
+| rendered listing lines `- agent-playbooks:<name>: <desc>`, chars / 2.8 (the lint) | 1,924 chars, ~688 projected (v0.4.0: 1,883 chars, ~673) | — |
+| `claude --plugin-dir . plugin details agent-playbooks` | ~469 always-on (v0.4.0: ~460; R35 on the drift against v0.2.1's ~614) | ~960–1.5k on invoke |
+| chars / 4 of the descriptions alone (old estimate, printed for comparison) | ~374 (v0.4.0: ~372) | 1,077–1,499 |
 
 The lint fails above 60 words per description, 700 projected tokens for the listing (estimate or `claude plugin details`, R20), or 1,500 tokens (chars/4) per body.
 
@@ -79,12 +80,12 @@ This cannot be proven in advance. Whether a rule helps or hinders a future model
 
 ## Pending
 
-- The first eval run (designed and stubbed; never run). 14 cases; ev11 and ev12 were added in v0.2.0, ev13 and ev14 in v0.3.0.
+- The first eval run (designed and stubbed; never run). 16 cases; ev11 and ev12 were added in v0.2.0, ev13 and ev14 in v0.3.0, ev15 and ev16 in v0.5.0.
 - The `fg-wait-guard` hook ([tools/hooks](tools/hooks/README.md)) is an approved experiment, registered by the owner 2026-10-07 11:45; it is not a rule.
 - TOOL-008 is re-measured with a harness-audit run on 2026-11-06 (its expiry forces the look), from transcripts: the hook logs decisions, not outcomes.
 - The `fg-wait-guard` judgement: `harness-audit --judge-fg-wait` on 2026-11-06 against the frozen baseline.
 - ANDR-002's time saving is unproven on a loaded host; the bytes carry the rule.
-- The lint projects ~673 always-on tokens and Claude Code ~460; the budget is 700 projected (R20). In crowded sessions descriptions may still be hidden (see "Skill listing").
+- The lint projects ~688 always-on tokens (1,924 of the 1,960 chars the budget allows) and Claude Code ~469; the budget is 700 projected (R20). 36 chars of headroom: the next skill needs a trim or an owner decision on the budget (R47). In crowded sessions descriptions may still be hidden (see "Skill listing").
 - PORT-003's deep-reach floor and re-introduced-defect check are INFERRED until LOMN M1a-4 Task 1 records its fuzz results (R30).
 
 ## Candidates not trialled

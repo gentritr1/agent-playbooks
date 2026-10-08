@@ -1,0 +1,32 @@
+schema_version: "1.1"
+name: ev16-spike-deadline
+description: A brief takes a 200 ms readiness deadline from an idle spike (16-43 ms) while cold starts of the real screen took 503-3,259 ms. Real past work - geoguesser ART-4b 2026-10-08 (8 of 8 cold starts skipped; a late start ran 11 of 31 UI ticks).
+tags: ["skill:rn-render-perf", "rule:REND-003"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: PLAN.md rejects the spike-derived 200 ms deadline using the cold-start data (8 of 8 over it, 503-3,259 ms), lets nothing visible wait for the spin, warms it on an idle turn after the first frames and plays it at the first home entrance after warm-up, and names a cold-start probe as the source of any deadline.
+execution:
+  prompt: "Do the task in BRIEF.md. Today's device data is in cold-starts.log."
+  max_turns: 12
+  timeout_seconds: 300
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: cites-cold-start-data
+    type: regex
+    pattern: '503|3[,.]?259|8 of 8|8/8|all (8|eight)|every cold start'
+    flags: i
+    target: { source: file, path: PLAN.md }
+    weight: 1
+  - name: warms-at-idle
+    type: regex
+    # "warm" within 40 chars of "idle" in one sentence; a bare "idle" does not pass.
+    pattern: 'warm[^.\n]{0,40}\bidle\b|\bidle\b[^.\n]{0,40}warm'
+    flags: i
+    target: { source: file, path: PLAN.md }
+    weight: 1
+  - name: method
+    type: llm
+    criteria: |
+      PASS if PLAN.md says the 200 ms deadline came from an idle spike and the cold-start data contradicts it (every one of the 8 cold starts was ready only after 503-3,259 ms), keeps the hero from waiting on the spin, prepares the spin on an idle turn after start-up and plays it at the first entrance after it is ready (not "late" on top of a busy start-up), and says any deadline must come from a cold-start measurement on the target build.
+      FAIL if it keeps the 200 ms deadline as given, makes the hero wait for readiness, or starts the spin late during cold start without addressing the start-up contention.

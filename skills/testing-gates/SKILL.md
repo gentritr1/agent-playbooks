@@ -37,10 +37,10 @@ A gate that cannot fail proves nothing. Each rule below says what must be true b
 ### TEST-004 · Reconcile sample counts before quoting a percentile
 - **Rule:** Print counted samples against window × expected rate beside every percentile.
 - **Kind:** invariant — why: partial or overflowing samplers give plausible percentiles of the wrong data.
-- **Evidence:** merge-kit: 1229 of ~1800 frames, then 0, then 1; arrows-game 2026-09-30: a parser rejected every gfxinfo row (trailing comma) → [perf-stats](evidence/perf-stats.md)
+- **Evidence:** merge-kit: 1229 of ~1800 frames, then 0, then 1; arrows-game 2026-09-30: a parser rejected every gfxinfo row (trailing comma); geoguesser 2026-10-08: 86 rows for 43 vsyncs (REND-005) → [perf-stats](evidence/perf-stats.md)
 - **Confidence:** VERIFIED
-- **Gate:** expected vs counted samples printed per window; read the windowed instrument before slow dumps
-- **Valid while:** any sampler · last_validated: 2026-10-06
+- **Gate:** expected vs counted samples printed per window; read the windowed instrument before slow dumps; a new parser first passes a synthetic input with known counts; both stamps of a duration come from one clock, raw values printed
+- **Valid while:** any sampler · last_validated: 2026-10-08
 - **Source:** TEST-004
 
 ### TEST-005 · Measure the configuration users get, and watch the control arm

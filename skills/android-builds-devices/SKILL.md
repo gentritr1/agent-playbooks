@@ -55,10 +55,10 @@ Measured on a shared macOS host running several agent sessions. Gates say what m
 ### ANDR-006 · Input only on a proven screen
 - **Rule:** Before each input or capture, prove the expected screen from fresh runtime state.
 - **Kind:** invariant — why: input on the wrong screen taps ads, buys the wrong item or records false evidence.
-- **Evidence:** arrows-game 2026-10-06: focus said MainActivity while a test ad was resumed; a late tap opened the wrong book tile; 2026-09-24: blind taps clicked a test ad → [readiness](evidence/readiness.md)
+- **Evidence:** arrows-game 2026-10-06: focus said MainActivity while a test ad was resumed; a late tap opened the wrong book tile; 2026-09-24: blind taps clicked a test ad; geoguesser 2026-10-08: "back on the launcher" was a native crash → [readiness](evidence/readiness.md)
 - **Confidence:** VERIFIED
-- **Gate:** the driver log shows the app's resumed activity and its own state log line before every input
-- **Valid while:** `ctx:android` · API 31 emulator · last_validated: 2026-10-07
+- **Gate:** the driver log shows the app's resumed activity and its own state log line before every input, and the app's `logcat -b crash` (cleared at start) stays empty
+- **Valid while:** `ctx:android` · API 31 and 36 emulators · last_validated: 2026-10-08
 - **Source:** ANDR-006
 
 ### ANDR-007 · Device and build scripts are bash, not zsh
