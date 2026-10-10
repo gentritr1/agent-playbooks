@@ -1,0 +1,34 @@
+schema_version: "1.1"
+name: ev19-pg-client-bounds
+description: A node-postgres pool with a pool-level error listener and a server-side statement_timeout only. Real past work - tondo crew-retention 2026-10-10 (a dropped checked-out connection crashed the process; a frozen socket hung a query past 9 s, ~10 s once a ROLLBACK queued behind it).
+tags: ["skill:data-persistence", "rule:DATA-007"]
+plugins: ["../../.."]
+runs: 3
+expected_outcome: server/db.js attaches an 'error' listener to each checked-out client, sets a client-side query_timeout, and releases a timed-out client destroyed without a ROLLBACK on it; the answer says how it was or would be tested and what stays unverified.
+execution:
+  prompt: "Do the task in BRIEF.md."
+  max_turns: 15
+  timeout_seconds: 300
+context:
+  scaffold_script: setup.sh
+graders:
+  - name: query-timeout
+    type: regex
+    pattern: 'query_timeout'
+    target: { source: file, path: server/db.js }
+    weight: 1
+  - name: destroys-timed-out-client
+    type: regex
+    pattern: 'release\(\s*(true|err|error|e|broken|destroy)\b'
+    target: { source: file, path: server/db.js }
+    weight: 1
+  - name: checked-out-client-bounds
+    type: llm
+    criteria: |
+      PASS if server/db.js (1) attaches an 'error' listener to the client returned by pool.connect() for as long as it is
+      checked out (the existing pool.on('error') covers idle clients only), (2) sets a client-side query timeout
+      (query_timeout or an equivalent race) because statement_timeout cannot fire when the socket goes silent, and (3) after
+      a client-side timeout releases that client destroyed (release(true) or release(err)) instead of issuing ROLLBACK on it,
+      and the final message names how this is tested (a dropped connection, a frozen socket or proxy) or marks it UNVERIFIED.
+      FAIL if it relies on pool.on('error') or statement_timeout alone, or awaits a ROLLBACK on a client that just timed out.
+    weight: 2

@@ -2,7 +2,7 @@
 
 Skills with data: shared, versioned practices that any Claude agent on any project can load before app or website work. Every rule carries measured evidence, a gate that proves it was followed, the conditions it was measured under, and a date after which it is no longer served as fact.
 
-Status: v0.6.0, a private GitHub repository installed as a Claude Code plugin. See "Pending".
+Status: v0.7.0, a private GitHub repository installed as a Claude Code plugin. See "Pending".
 
 ## What is inside
 
@@ -57,7 +57,7 @@ Skill descriptions load into every session, so they are the most expensive bytes
 | `claude --plugin-dir . plugin details agent-playbooks` | ~476 always-on (v0.5.0: ~469; R35 on the drift against v0.2.1's ~614) | ~960–1.5k on invoke |
 | chars / 4 of the descriptions alone (old estimate, printed for comparison) | ~381 (v0.5.0: ~374) | 1,256–1,498 (v0.5.0: 1,077–1,499) |
 
-The lint fails above 60 words per description, 700 projected tokens for the listing (estimate or `claude plugin details`, R20), or 1,500 tokens (chars/4) per body.
+The lint fails above 60 words per description, 700 projected tokens for the listing (estimate or `claude plugin details`, R20), or 1,500 tokens (chars/4) per body (1,700 for `data-persistence`, CONTRIBUTING "Budgets").
 
 ## Skill listing: why descriptions can vanish (2026-10-07)
 
@@ -80,7 +80,7 @@ This cannot be proven in advance. Whether a rule helps or hinders a future model
 
 ## Pending
 
-- The first eval run (designed and stubbed; never run). 16 cases; ev11 and ev12 were added in v0.2.0, ev13 and ev14 in v0.3.0, ev15 and ev16 in v0.5.0.
+- The first eval run (designed and stubbed; never run). 19 cases; ev11 and ev12 were added in v0.2.0, ev13 and ev14 in v0.3.0, ev15 and ev16 in v0.5.0, ev17 and ev18 in v0.6.0, ev19 in v0.7.0.
 - The `fg-wait-guard` hook ([tools/hooks](tools/hooks/README.md)) is an approved experiment, registered by the owner 2026-10-07 11:45; it is not a rule.
 - TOOL-008 is re-measured with a harness-audit run on 2026-11-06 (its expiry forces the look), from transcripts: the hook logs decisions, not outcomes.
 - The `fg-wait-guard` judgement: `harness-audit --judge-fg-wait` on 2026-11-06 against the frozen baseline.

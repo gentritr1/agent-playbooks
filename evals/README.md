@@ -4,7 +4,7 @@ Designed and stubbed; not run yet. The question each run answers: on this model,
 
 ## Cases
 
-Eighteen small, fixed tasks drawn from real past failures. Each scaffolds its own workspace (`setup.sh`) and is graded by `claude plugin eval` graders: `regex` on files, the trace or the final message, `tool_used`, and `llm` rubrics with explicit PASS/FAIL conditions. Graders check outcomes where the runner can see them (a file the scaffold writes, a harness marker in the trace) rather than the method used; `claude plugin eval` has no duration or custom-code grader (docs: code.claude.com/docs/en/plugin-evals), so "no foreground call past 120 s" is the absence of the 2-min cap marker plus no foreground `timeout` above 120000, the only two ways past it.
+Nineteen small, fixed tasks drawn from real past failures. Each scaffolds its own workspace (`setup.sh`) and is graded by `claude plugin eval` graders: `regex` on files, the trace or the final message, `tool_used`, and `llm` rubrics with explicit PASS/FAIL conditions. Graders check outcomes where the runner can see them (a file the scaffold writes, a harness marker in the trace) rather than the method used; `claude plugin eval` has no duration or custom-code grader (docs: code.claude.com/docs/en/plugin-evals), so "no foreground call past 120 s" is the absence of the 2-min cap marker plus no foreground `timeout` above 120000, the only two ways past it.
 
 | Case | Real origin | Rules | Graders (pass when) |
 |---|---|---|---|
@@ -26,6 +26,7 @@ Eighteen small, fixed tasks drawn from real past failures. Each scaffolds its ow
 | ev16-spike-deadline | geoguesser ART-4b 2026-10-08: a 200 ms deadline from a 16–43 ms spike; 8 of 8 cold starts took 503–3,259 ms | REND-003 | `PLAN.md` cites the cold-start data and warms at idle; rubric: nothing visible waits, play at the first entrance after warm-up, deadline from a cold-start probe |
 | ev17-monitor-by-design | gold-pdf-bot incident 1 (2026-10-08): a refused database login lost data for ~3 h, every reason swallowed | DATA-006, DATA-003 | PLAN.md names a drill; rubric: alive signal, reason kept outside the failed database, where and how fast, computed free-tier cost, drill (or asks the owner) |
 | ev18-env-change-is-a-deploy | gold-pdf-bot incident 1: password edited without a redeploy, then Neon's `sslmode=require` copy format | VERC-006 | final message says redeploy; rubric: redeploy, fix sslmode for `db.py`, test the exact value first and confirm the next stored request |
+| ev19-pg-client-bounds | tondo crew-retention 2026-10-10: a dropped checked-out connection crashed the process; a frozen socket hung a query past 9 s, ~10 s with ROLLBACK | DATA-007 | `server/db.js` sets `query_timeout` and releases destroyed; rubric: listener on the checked-out client, client-side timeout, no ROLLBACK on a timed-out client, test named or UNVERIFIED |
 
 `python3 evals/run-evals.py cases` prints the same list from the case files.
 
