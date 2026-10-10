@@ -26,6 +26,7 @@
 
 - `description`: triggers only, ≤ 60 words. The always-on skill listing (each skill rendered as `- agent-playbooks:<name>: <description>`) ≤ 700 projected tokens: rendered chars / 2.8, and the `claude plugin details` always-on number when `claude` is on PATH (CHANGELOG R20). Put the trigger words first; see "Skill listing" in the README for why descriptions can vanish in crowded sessions.
 - `SKILL.md` body ≤ 1,500 tokens (chars / 4). Detail goes to `evidence/`, reached by links. A skill never tells an agent to read all its evidence.
+- Per-skill override: `data-persistence` ≤ 1,700 tokens (measured 1,690 with all seven rules; the owner said "about 1,600", but DATA-005 alone is ~194 tokens, so 1,600 cannot hold seven rules without cutting rule text) (`BODY_TOKEN_OVERRIDES` in `tools/lint-playbooks.py`; every other skill keeps 1,500). The skill now carries seven rules, and the owner chose a larger budget over retiring DATA-005, which is unmeasured, not disproved (`retired/` is reserved for rules the evidence disproved; CHANGELOG R68). A new override needs the same kind of ruling.
 - 5–7 rules per skill fit the budget; the lint warns above 15.
 
 ## Promotion path: project lesson → playbook

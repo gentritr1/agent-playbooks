@@ -57,7 +57,7 @@ Skill descriptions load into every session, so they are the most expensive bytes
 | `claude --plugin-dir . plugin details agent-playbooks` | ~476 always-on (v0.5.0: ~469; R35 on the drift against v0.2.1's ~614) | ~960–1.5k on invoke |
 | chars / 4 of the descriptions alone (old estimate, printed for comparison) | ~381 (v0.5.0: ~374) | 1,256–1,498 (v0.5.0: 1,077–1,499) |
 
-The lint fails above 60 words per description, 700 projected tokens for the listing (estimate or `claude plugin details`, R20), or 1,500 tokens (chars/4) per body.
+The lint fails above 60 words per description, 700 projected tokens for the listing (estimate or `claude plugin details`, R20), or 1,500 tokens (chars/4) per body (1,700 for `data-persistence`, CONTRIBUTING "Budgets").
 
 ## Skill listing: why descriptions can vanish (2026-10-07)
 

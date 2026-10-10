@@ -16,7 +16,7 @@ Exit 1 (FAIL) on:
   budget   - a description over 60 words; the always-on skill listing over 700 PROJECTED tokens, i.e.
              the rendered lines `- <plugin>:<name>: <desc>\n` at 2.8 chars/token and, when `claude` is on
              PATH, the always-on number `claude plugin details` prints; a SKILL.md body over 1,500 tokens
-             (chars/4). chars/4 of the descriptions is still printed for comparison.
+             (chars/4; 1,700 for data-persistence, BODY_TOKEN_OVERRIDES). chars/4 of the descriptions is still printed for comparison.
              Calibration: 658 projected / 1,819 chars on 2026-10-07 (2.76 chars/token); after the 0.2.1
              trims 614 / 1,622 (2.64), so the 2.8 estimate runs ~6 % low and the CLI number decides.
   skill    - frontmatter name != directory, no description, no "## Not covered" section;
@@ -51,6 +51,8 @@ MAX_DESC_WORDS = 60
 MAX_LISTING_TOKENS = 700  # projected; RULING R20 (600 was not reachable without dropping trigger words)
 LISTING_CHARS_PER_TOKEN = 2.8
 MAX_BODY_TOKENS = 1500
+# Per-skill body budgets above the default; each needs a ruling in CONTRIBUTING.md "Budgets" and the CHANGELOG.
+BODY_TOKEN_OVERRIDES = {"data-persistence": 1700}  # R68: seven rules; owner chose a larger budget over retiring DATA-005
 HEURISTIC_MAX_DAYS = 90
 RETIRED_ID = re.compile(r"^\*\*Retired id:\*\*\s*([A-Z]{2,6}-\d{3})", re.M)
 
@@ -254,8 +256,9 @@ def lint(root: Path, today: dt.date, max_age: int, use_claude: bool = True) -> R
         desc_tokens_total += est_tokens(desc)
         rep.listing_chars += len(listing_line(plugin, skill.name, desc))
         body_tokens = est_tokens(body)
-        if body_tokens > MAX_BODY_TOKENS:
-            rep.fail(rel(md, root), f"body is ~{body_tokens} tokens (> {MAX_BODY_TOKENS}, chars/4); "
+        body_limit = BODY_TOKEN_OVERRIDES.get(skill.name, MAX_BODY_TOKENS)
+        if body_tokens > body_limit:
+            rep.fail(rel(md, root), f"body is ~{body_tokens} tokens (> {body_limit}, chars/4); "
                                     "disclose detail into evidence/")
         if not re.search(r"^##\s+Not covered", body, re.M):
             rep.fail(rel(md, root), "no '## Not covered / defer to ...' section")

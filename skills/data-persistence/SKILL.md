@@ -43,6 +43,15 @@ Only what our projects measured.
 - **Valid while:** `ctx:postgres` · Prisma behind a Neon pooler · last_validated: 2026-08-01
 - **Source:** DATA-004
 
+### DATA-005 · Neon cost follows awake time, not query count
+- **Rule:** Batch database reads and remove anonymous pollers before tuning queries for cost.
+- **Kind:** heuristic — goal: stay inside the plan's compute-hours; override: stronger case evidence, stated in the report; expires: 2027-01-04
+- **Evidence:** gold-pdf-bot 2026-10-06: any query wakes compute for ~5 min (~0.021 CU-h each at 0.25 CU); wordle: health pollers modelled to pin ~95 % of free CU-hours → [neon](evidence/neon.md)
+- **Confidence:** INFERRED — modelled from plan documentation, never metered
+- **Gate:** the report states queries per hour and expected awake hours before and after
+- **Valid while:** `ctx:neon` · Neon free plan read 2026-10-06 · last_validated: 2026-10-06
+- **Source:** DATA-005
+
 ### DATA-006 · Critical modules ship with a monitor that runs their own path
 - **Rule:** Before building or changing a webhook, database link, sender, data feed or credential, write down its alive signal, the failure reason that survives the failure, where the owner sees it and how fast, its free-tier cost, and the drill that turns it red; ask the owner for any missing answer.
 - **Kind:** invariant — why: owner rule 2026-10-08, after a refused database login lost data for ~3 h while every reason was swallowed or kept only in the failed database.

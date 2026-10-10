@@ -199,6 +199,41 @@ class LintTests(unittest.TestCase):
         self.mutate("## Not covered / defer to", "Padding paragraph. " * 400 + "\n\n## Not covered / defer to")
         self.assertFails("tokens (> 1500, chars/4)")
 
+    def pad_body_to(self, tokens: int, skill_dir: str = "demo-skill") -> None:
+        """Pad the skill body (before '## Not covered') so it measures exactly `tokens` (chars/4, rounded up)."""
+        path = self.root / "skills" / skill_dir / "SKILL.md"
+        head, body = path.read_text().split("\n---\n", 1)[0] + "\n---\n", path.read_text().split("\n---\n", 1)[1]
+        need = tokens * 4 - (len(body) + 1)  # the lint's body keeps the newline before the closing '---'
+        self.assertGreater(need, 0, "fixture body already over the target")
+        pad = ("p" * (need - 2)) + "\n\n"  # +"\n\n" below keeps the heading on its own paragraph
+        path.write_text(head + body.replace("## Not covered", pad + "## Not covered", 1))
+
+    def test_other_skill_at_1550_still_fails(self) -> None:
+        # negative control for the data-persistence override: the default budget is unchanged
+        self.pad_body_to(1550)
+        self.assertFails("tokens (> 1500, chars/4)")
+
+    def test_other_skill_at_1500_passes(self) -> None:
+        self.pad_body_to(1500)
+        res = self.lint()
+        self.assertEqual(res.returncode, 0, res.stdout)
+
+    def rename_to_data_persistence(self) -> None:
+        shutil.move(str(self.root / "skills" / "demo-skill"), str(self.root / "skills" / "data-persistence"))
+        self.skill = self.root / "skills" / "data-persistence" / "SKILL.md"
+        self.mutate("name: demo-skill", "name: data-persistence")
+
+    def test_data_persistence_override_allows_1700(self) -> None:
+        self.rename_to_data_persistence()
+        self.pad_body_to(1700, "data-persistence")
+        res = self.lint()
+        self.assertEqual(res.returncode, 0, res.stdout)
+
+    def test_data_persistence_override_stops_at_1700(self) -> None:
+        self.rename_to_data_persistence()
+        self.pad_body_to(1701, "data-persistence")
+        self.assertFails("tokens (> 1700, chars/4)")
+
     # skill shape and hygiene
     def test_not_covered_section_required(self) -> None:
         self.mutate("## Not covered / defer to", "## Elsewhere")
