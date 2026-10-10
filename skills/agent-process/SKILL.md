@@ -53,12 +53,12 @@ How the work is run, measured across ~93 helper runs and several projects. The o
 - **Source:** PROC-006
 
 ### PROC-007 · Outward and irreversible steps need the owner's yes each time
-- **Rule:** Ask before every push, merge to main, publish, store submission or deletion, and delete only outside a keep-list built from the reports.
+- **Rule:** Ask before every push, merge to main, publish, store submission or deletion, and delete only outside a keep-list built from the reports, shared evidence folders included.
 - **Kind:** invariant — why: approvals do not carry over, and an emergency cleanup deleted eight owner-acceptance videos.
-- **Evidence:** arrows-game 2026-09-27: `find … -delete` removed 8 `owner-*.mp4` files; 2026-10-01: each push needed its own yes → [delegation](evidence/delegation.md)
+- **Evidence:** arrows-game 2026-09-27: `find … -delete` removed 8 `owner-*.mp4` files; 2026-10-01: each push needed its own yes; tondo 2026-10-10: a subagent's `rm -rf` took a sibling task's 18 owner captures → [delegation](evidence/delegation.md)
 - **Confidence:** VERIFIED
-- **Gate:** the report quotes the owner's yes per outward step; deletions print the keep-list first
-- **Valid while:** owner-run projects · last_validated: 2026-10-01
+- **Gate:** the report quotes the owner's yes per outward step; deletions print the keep-list first; a brief names the files its task may delete
+- **Valid while:** owner-run projects · last_validated: 2026-10-10
 - **Source:** PROC-007
 
 ## Experiment, not a rule: `fg-wait-guard`

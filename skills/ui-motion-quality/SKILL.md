@@ -63,11 +63,11 @@ Taste is the owner's call; these rules make the evidence he judges honest. Visua
 
 ### UI-007 · Responsive checks sweep the band
 - **Rule:** Sweep widths across the whole range a layout supports instead of sampling a few breakpoints.
-- **Kind:** heuristic — goal: no overlap at any common viewport; override: stronger case evidence, stated in the report; expires: 2026-12-31
-- **Evidence:** tondo: samples green, sweep found 1366×768 at −2.5 px; form-studio: a row broke at 900–1240 px → [headless-blind](evidence/headless-blind.md)
+- **Kind:** heuristic — goal: no overlap at any common viewport; override: stronger case evidence, stated in the report; expires: 2027-01-08
+- **Evidence:** tondo: samples green, sweep found 1366×768 at −2.5 px; 2026-10-10: a sweep caught a planned layout pushing a button 16–20 px below the fold, so the layout changed; form-studio: a row broke at 900–1240 px → [headless-blind](evidence/headless-blind.md)
 - **Confidence:** VERIFIED
-- **Gate:** a sweep in ≤ 40 px steps reports the minimum clearance and where its sign flips
-- **Valid while:** `ctx:web` · last_validated: 2026-10-02
+- **Gate:** a sweep in ≤ 40 px steps (heights too, when a control must stay above the fold) reports the minimum clearance and where its sign flips, measured on what the change can push, not only on the changed control
+- **Valid while:** `ctx:web` · last_validated: 2026-10-10
 - **Source:** UI-007
 
 ## Gates before you report done

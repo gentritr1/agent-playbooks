@@ -8,21 +8,21 @@ description: Before writing or trusting a test, gate, detector or benchmark, A/B
 A gate that cannot fail proves nothing. Each rule below says what must be true before a verdict counts.
 
 ### TEST-001 · New tests go red first and have teeth
-- **Rule:** Show each new test failing on the pre-fix tree, and a mutant of the guarded line failing it.
+- **Rule:** Show each new test failing on the pre-fix tree, and a mutant of the guarded line failing it; plan-written tests too.
 - **Kind:** invariant — why: tests that pass on the broken tree, or catch no mutant, approve anything.
-- **Evidence:** arrows-game 2026-09-24: per-guard mutation table, every mutant caught; secret-dictator-v2: all seven mutants first "reported clean"; geoguesser: a 20-line test killed all ten "unreachable" mutants → [teeth](evidence/teeth.md)
+- **Evidence:** arrows-game 2026-09-24: per-guard mutation table, every mutant caught; secret-dictator-v2: all seven mutants first "reported clean"; geoguesser: a 20-line test killed all ten "unreachable" mutants; tondo 2026-10-10: 14 of 34 mutants survived plan-written tests → [teeth](evidence/teeth.md)
 - **Confidence:** VERIFIED
-- **Gate:** the report lists the red run, each mutant with `caught > 0`, and a byte-identical restore
-- **Valid while:** any test runner · last_validated: 2026-10-06
+- **Gate:** the report lists the red run, each mutant with `caught > 0` at the guarded assertion, and a byte-identical restore
+- **Valid while:** any test runner · last_validated: 2026-10-10
 - **Source:** TEST-001
 
 ### TEST-002 · A zero or a pass needs a positive control and primary data
 - **Rule:** Fire every detector on a known-true case in the same build, and recompute gates from primary data.
 - **Kind:** invariant — why: a blind instrument reads zero and a self-reported flag reads pass.
-- **Evidence:** arrows-game 2026-09-19: "0/10 survive" grepped a dev-only log in a release build; geoguesser 2026-09-16: a gate trusted a `reconciled` flag and passed n=240 against 18,432 → [teeth](evidence/teeth.md)
+- **Evidence:** arrows-game 2026-09-19: "0/10 survive" grepped a dev-only log in a release build; geoguesser 2026-09-16: a gate trusted a `reconciled` flag and passed n=240 against 18,432; tondo 2026-10-10: a layout gate passed on an empty set → [teeth](evidence/teeth.md)
 - **Confidence:** VERIFIED
-- **Gate:** each zero count is printed beside its positive-control count (> 0); the gate reads raw rows, not report flags
-- **Valid while:** any detector · last_validated: 2026-10-04
+- **Gate:** each zero count is printed beside its positive-control count (> 0); the gate reads raw rows, not report flags; a probe reports `valid=n/n` and fails one sabotage
+- **Valid while:** any detector · last_validated: 2026-10-10
 - **Source:** TEST-002
 
 ### TEST-003 · A performance shift beats the null and replicates
@@ -58,7 +58,7 @@ A gate that cannot fail proves nothing. Each rule below says what must be true b
 - **Evidence:** arrows-game 2026-10-06: a brief's "1/2 Normal" share was 4/6 in code; lucky-shelf: brief thresholds caught 84 % of days → [stale-numbers](evidence/stale-numbers.md)
 - **Confidence:** VERIFIED
 - **Gate:** every number in the report names the command and commit that produced it
-- **Valid while:** any project · last_validated: 2026-10-06
+- **Valid while:** any project · last_validated: 2026-10-10
 - **Source:** TEST-006
 
 ### TEST-007 · Jest via Babel does not type-check
@@ -71,7 +71,7 @@ A gate that cannot fail proves nothing. Each rule below says what must be true b
 - **Source:** TEST-007
 
 ## Gates before you report done
-Red then green, with a caught mutant (001); positive control beside each zero (002); null spread and replication for perf (003); sample reconciliation (004); flags from runtime (005); provenance of every number (006).
+Red then green, with a caught mutant (001); positive control beside each zero (002); null spread and replication (003); sample reconciliation (004); flags from runtime (005); provenance of every number (006).
 
 ## Not covered / defer to
 TDD workflow: `superpowers:test-driven-development`. Final claims: `superpowers:verification-before-completion`. Debugging: `superpowers:systematic-debugging`.
